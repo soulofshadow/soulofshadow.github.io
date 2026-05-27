@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!-- ==================================================================
-     PERSONAL HOMEPAGE · 中文 · kami parchment design system
+     PERSONAL HOMEPAGE · 中文 / EN · kami parchment design system
      Yiran Zeng · 曾怡然 · PhD Student @ Unibo · NLP
-     Sections: Hero · About · Education · Research · Experience · Projects · Connect · Footer
+     Bilingual: top-right 中/EN toggle swaps .lang-zh / .lang-en blocks
      Static HTML for GitHub Pages
      ================================================================== -->
 <html lang="zh-CN">
@@ -10,7 +10,7 @@
 <meta charset="utf-8">
 <title>Yiran Zeng · 曾怡然 · NLP PhD</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="曾怡然 (Yiran Zeng) 的个人主页 — 博洛尼亚大学计算机科学与工程博士生，自然语言处理方向，关注知识增强的语言模型与医疗问答。">
+<meta name="description" content="曾怡然 (Yiran Zeng) 的个人主页 — 博洛尼亚大学计算机科学与工程博士生，自然语言处理方向，关注知识增强的语言模型与医疗问答。Personal site of Yiran Zeng, NLP PhD student at the University of Bologna.">
 <meta name="author" content="Yiran Zeng">
 <meta property="og:title" content="Yiran Zeng · 曾怡然 · NLP PhD">
 <meta property="og:description" content="博洛尼亚大学计算机科学与工程博士生，自然语言处理方向，关注知识增强的语言模型与医疗问答。">
@@ -44,7 +44,7 @@
     "https://www.instagram.com/soulofshadowz",
     "https://hevy.com/user/soulofshadow"
   ],
-  "inLanguage": "zh-CN"
+  "inLanguage": ["zh-CN", "en"]
 }
 </script>
 <style>
@@ -118,6 +118,44 @@ a:hover { color: var(--brand-light); }
   max-width: 1120px;
   margin: 0 auto;
   padding: 88px 64px 120px;
+}
+
+/* ========== i18n toggle ========== */
+
+body.lang-zh .lang-en { display: none; }
+body.lang-en .lang-zh { display: none; }
+
+.lang-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+  box-shadow: 0 1px 6px rgba(20, 19, 19, 0.07);
+}
+.lang-toggle button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--stone);
+  font-family: var(--latin-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.lang-toggle button:hover { color: var(--brand); }
+.lang-toggle button.is-active {
+  background: var(--brand);
+  color: var(--ivory);
 }
 
 /* ========== Buttons ========== */
@@ -275,7 +313,7 @@ a:hover { color: var(--brand-light); }
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  margin: 0 0 32px;
+  margin: 32px 0 0;
   font-family: var(--latin-ui);
   font-size: 13px;
   color: var(--stone);
@@ -520,6 +558,7 @@ footer.foot {
 
 @media (max-width: 880px) {
   .page { padding: 64px 32px 80px; }
+  .lang-toggle { top: 14px; right: 14px; }
   .hero { margin-bottom: 56px; padding-bottom: 32px; }
   .hero-top { flex-direction: column; align-items: flex-start; gap: 24px; }
   .hero-avatar { width: 132px; height: 132px; }
@@ -556,13 +595,20 @@ footer.foot {
 }
 </style>
 </head>
-<body>
+<body class="lang-zh">
+
+<!-- ============ Language toggle ============ -->
+<div class="lang-toggle" role="group" aria-label="Language">
+  <button type="button" data-lang="zh" aria-pressed="true">中</button>
+  <button type="button" data-lang="en" aria-pressed="false">EN</button>
+</div>
+
 <main class="page">
 
   <!-- ============ Hero ============ -->
   <header class="hero">
     <div class="eyebrow">
-      <span>PhD Student · NLP · Bologna, Italy</span>
+      <span><span class="lang-zh">博士在读 · 自然语言处理 · 博洛尼亚</span><span class="lang-en">PhD Student · NLP · Bologna, Italy</span></span>
       <span class="hero-links">
         <a href="https://github.com/soulofshadow" target="_blank" rel="noopener">GitHub</a>
         <a href="https://scholar.google.com/citations?user=kZXtK-MAAAAJ&hl=en" target="_blank" rel="noopener">Scholar</a>
@@ -577,18 +623,19 @@ footer.foot {
       <div class="hero-text">
         <h1>Yiran Zeng</h1>
         <p class="cn-name">曾怡然<span class="pronoun">he / him</span></p>
-        <p class="tagline">博洛尼亚大学计算机科学与工程博士生，自然语言处理方向。我把结构化知识注入语言模型，让它们在医疗问答这样的高风险场景里，回答得更可靠、也更可解释。</p>
+        <p class="tagline lang-zh">博洛尼亚大学计算机科学与工程博士生，自然语言处理方向。我把结构化知识注入语言模型，让它们在医疗问答这样的高风险场景里，回答得更可靠、也更可解释。</p>
+        <p class="tagline lang-en">PhD student in Computer Science &amp; Engineering at the University of Bologna, working on natural language processing. I infuse structured knowledge into language models so they answer more reliably — and more transparently — in high-stakes settings like medical question answering.</p>
         <div class="hero-cta">
-          <a class="btn-ghost" href="https://github.com/soulofshadow" target="_blank" rel="noopener">查看代码</a>
-          <a class="btn-primary" href="https://scholar.google.com/citations?user=kZXtK-MAAAAJ&hl=en" target="_blank" rel="noopener">阅读研究</a>
+          <a class="btn-ghost" href="https://github.com/soulofshadow" target="_blank" rel="noopener"><span class="lang-zh">查看代码</span><span class="lang-en">View Code</span></a>
+          <a class="btn-primary" href="https://scholar.google.com/citations?user=kZXtK-MAAAAJ&hl=en" target="_blank" rel="noopener"><span class="lang-zh">阅读研究</span><span class="lang-en">Read Research</span></a>
         </div>
       </div>
     </div>
 
-    <div class="hero-tokens" style="margin-top:32px;">
+    <div class="hero-tokens">
       <span><b>University of Bologna</b> · DISI NLP</span>
-      <span><b>导师</b> Prof. Gianluca Moro</span>
-      <span><b>语言</b> 中文 · English · 日本語</span>
+      <span><b><span class="lang-zh">导师</span><span class="lang-en">Advisor</span></b> Prof. Gianluca Moro</span>
+      <span><b><span class="lang-zh">语言</span><span class="lang-en">Languages</span></b> 中文 · English · 日本語</span>
     </div>
   </header>
 
@@ -596,26 +643,30 @@ footer.foot {
   <section>
     <div class="section-head">
       <p class="section-num">00 · ABOUT</p>
-      <h2 class="section-title">关于</h2>
+      <h2 class="section-title"><span class="lang-zh">关于</span><span class="lang-en">About</span></h2>
     </div>
 
-    <p class="manifesto">
+    <p class="manifesto lang-zh">
       我相信好的语言模型不只是能说话，更要<em>说得有据可依</em>。我的研究围绕一个问题展开：如何把图谱、本体这样的结构化知识喂给语言模型，让它在面对专业领域问题时，既保持流畅，又不脱离事实。<br>
       从重庆到博洛尼亚，从 iOS、Java 工程师到 NLP 研究者，我一路在写代码、做项目，也在没有云的夜里去看星星。
+    </p>
+    <p class="manifesto lang-en">
+      I believe a good language model shouldn't just speak fluently — it should <em>speak with grounds</em>. My research centers on one question: how do we feed structured knowledge — graphs and ontologies — into language models so they stay fluent without drifting from the facts?<br>
+      From Chongqing to Bologna, from iOS and Java engineer to NLP researcher, I've been writing code, building projects, and going out to watch the stars on cloudless nights.
     </p>
 
     <div class="metrics">
       <div class="metric">
         <span class="metric-value">2024 – 2027</span>
-        <span class="metric-label">博士在读 · 计算机科学与工程</span>
+        <span class="metric-label"><span class="lang-zh">博士在读 · 计算机科学与工程</span><span class="lang-en">PhD · Computer Science &amp; Engineering</span></span>
       </div>
       <div class="metric">
         <span class="metric-value">NLP · Knowledge</span>
-        <span class="metric-label">研究领域</span>
+        <span class="metric-label"><span class="lang-zh">研究领域</span><span class="lang-en">Research focus</span></span>
       </div>
       <div class="metric">
         <span class="metric-value">Bologna, Italy</span>
-        <span class="metric-label">居住地 · 实验室在 Cesena</span>
+        <span class="metric-label"><span class="lang-zh">居住地 · 实验室在 Cesena</span><span class="lang-en">Based in Bologna · Lab in Cesena</span></span>
       </div>
     </div>
   </section>
@@ -624,17 +675,17 @@ footer.foot {
   <section>
     <div class="section-head">
       <p class="section-num">01 · EDUCATION</p>
-      <h2 class="section-title">教育</h2>
+      <h2 class="section-title"><span class="lang-zh">教育</span><span class="lang-en">Education</span></h2>
     </div>
 
     <ol class="features">
       <li>
-        <p class="name">博士 · 计算机科学与工程<small>University of Bologna · 2024.11 – 2027.11</small></p>
-        <p class="what">在 Prof. Gianluca Moro 指导下研究自然语言处理。博士奖学金由博洛尼亚大学与 Gruppo Maggioli S.p.A. 共同资助。</p>
+        <p class="name"><span class="lang-zh">博士 · 计算机科学与工程</span><span class="lang-en">PhD · Computer Science &amp; Engineering</span><small>University of Bologna · 2024.11 – 2027.11</small></p>
+        <p class="what"><span class="lang-zh">在 Prof. Gianluca Moro 指导下研究自然语言处理。博士奖学金由博洛尼亚大学与 Gruppo Maggioli S.p.A. 共同资助。</span><span class="lang-en">Researching natural language processing under Prof. Gianluca Moro. PhD scholarship jointly funded by the University of Bologna and Gruppo Maggioli S.p.A.</span></p>
       </li>
       <li>
-        <p class="name">硕士 · 人工智能<small>University of Bologna · 2020.09 – 2024.03 · 103/110</small></p>
-        <p class="what">毕业论文 <em>《Infusing Structured Medical Knowledge into Language Models: Graph Neural Prompting for Medical Question Answering》</em>，导师 Prof. Gianluca Moro，研究方向自然语言处理。</p>
+        <p class="name"><span class="lang-zh">硕士 · 人工智能</span><span class="lang-en">MSc · Artificial Intelligence</span><small>University of Bologna · 2020.09 – 2024.03 · 103/110</small></p>
+        <p class="what"><span class="lang-zh">毕业论文 <em>《Infusing Structured Medical Knowledge into Language Models: Graph Neural Prompting for Medical Question Answering》</em>，导师 Prof. Gianluca Moro，研究方向自然语言处理。</span><span class="lang-en">Thesis: <em>“Infusing Structured Medical Knowledge into Language Models: Graph Neural Prompting for Medical Question Answering”</em>, advised by Prof. Gianluca Moro. Area of study: Natural Language Processing.</span></p>
       </li>
     </ol>
   </section>
@@ -643,21 +694,21 @@ footer.foot {
   <section>
     <div class="section-head">
       <p class="section-num">02 · RESEARCH</p>
-      <h2 class="section-title">研究方向</h2>
+      <h2 class="section-title"><span class="lang-zh">研究方向</span><span class="lang-en">Research</span></h2>
     </div>
 
     <ol class="features">
       <li>
-        <p class="name">知识增强的语言模型<small>Knowledge-infused LMs</small></p>
-        <p class="what">把医学知识图谱以图神经提示 (Graph Neural Prompting) 的方式注入语言模型，让模型在回答时引用结构化事实，而非仅凭语言先验。</p>
+        <p class="name"><span class="lang-zh">知识增强的语言模型</span><span class="lang-en">Knowledge-infused LMs</span><small>Knowledge-infused Language Models</small></p>
+        <p class="what"><span class="lang-zh">把医学知识图谱以图神经提示 (Graph Neural Prompting) 的方式注入语言模型，让模型在回答时引用结构化事实，而非仅凭语言先验。</span><span class="lang-en">Injecting medical knowledge graphs into language models via Graph Neural Prompting, so answers are grounded in structured facts rather than language priors alone.</span></p>
       </li>
       <li>
-        <p class="name">医疗问答<small>Healthcare QA</small></p>
-        <p class="what">代表工作 <a href="https://scholar.google.com/citations?user=kZXtK-MAAAAJ&hl=en" target="_blank" rel="noopener">《Infusing Structured Medical Knowledge into Language Models: Graph Neural Prompting for Healthcare Question Answering》</a>，探索在高风险医疗场景下提升回答的准确性与可解释性。</p>
+        <p class="name"><span class="lang-zh">医疗问答</span><span class="lang-en">Healthcare QA</span><small>Medical Question Answering</small></p>
+        <p class="what"><span class="lang-zh">代表工作 <a href="https://scholar.google.com/citations?user=kZXtK-MAAAAJ&hl=en" target="_blank" rel="noopener">《Infusing Structured Medical Knowledge into Language Models: Graph Neural Prompting for Healthcare Question Answering》</a>，探索在高风险医疗场景下提升回答的准确性与可解释性。</span><span class="lang-en">Featured work: <a href="https://scholar.google.com/citations?user=kZXtK-MAAAAJ&hl=en" target="_blank" rel="noopener">“Infusing Structured Medical Knowledge into Language Models: Graph Neural Prompting for Healthcare Question Answering”</a>, improving accuracy and interpretability in high-stakes medical settings.</span></p>
       </li>
       <li>
-        <p class="name">本体与知识抽取<small>UMLS · KELM</small></p>
-        <p class="what">围绕 UMLS 等医学本体进行知识增强语言建模的实验与工具开发，连接符号知识与神经表示。</p>
+        <p class="name"><span class="lang-zh">本体与知识抽取</span><span class="lang-en">Ontologies &amp; Knowledge</span><small>UMLS · KELM</small></p>
+        <p class="what"><span class="lang-zh">围绕 UMLS 等医学本体进行知识增强语言建模的实验与工具开发，连接符号知识与神经表示。</span><span class="lang-en">Experiments and tooling for knowledge-enhanced language modeling around medical ontologies such as UMLS, bridging symbolic knowledge and neural representations.</span></p>
       </li>
     </ol>
   </section>
@@ -666,25 +717,25 @@ footer.foot {
   <section>
     <div class="section-head">
       <p class="section-num">03 · EXPERIENCE</p>
-      <h2 class="section-title">经历</h2>
+      <h2 class="section-title"><span class="lang-zh">经历</span><span class="lang-en">Experience</span></h2>
     </div>
 
     <ol class="features">
       <li>
-        <p class="name">博士研究员<small>DISI UniBo NLP · 2024.11 – 至今</small></p>
-        <p class="what">全职从事自然语言处理研究，方向为知识增强的语言模型与医疗问答。</p>
+        <p class="name"><span class="lang-zh">博士研究员</span><span class="lang-en">PhD Researcher</span><small>DISI UniBo NLP · 2024.11 – <span class="lang-zh">至今</span><span class="lang-en">present</span></small></p>
+        <p class="what"><span class="lang-zh">全职从事自然语言处理研究，方向为知识增强的语言模型与医疗问答。</span><span class="lang-en">Full-time NLP research on knowledge-infused language models and medical question answering.</span></p>
       </li>
       <li>
-        <p class="name">iOS 应用开发<small>Chongqing Chuantuo Technology · 2019</small></p>
-        <p class="what">使用 Objective-C 与 Swift 开发 iOS 应用并负责上架维护，通过蓝牙 API 实现 App 与蓝牙耳机硬件的互联操作。</p>
+        <p class="name"><span class="lang-zh">iOS 应用开发</span><span class="lang-en">iOS App Developer</span><small>Chongqing Chuantuo Technology · 2019</small></p>
+        <p class="what"><span class="lang-zh">使用 Objective-C 与 Swift 开发 iOS 应用并负责上架维护，通过蓝牙 API 实现 App 与蓝牙耳机硬件的互联操作。</span><span class="lang-en">Built and shipped an iOS app in Objective-C and Swift, using the Bluetooth API to connect the app with headset hardware.</span></p>
       </li>
       <li>
-        <p class="name">Java Web 开发<small>Neusoft · 2019</small></p>
-        <p class="what">为银行设计开发金融管理系统，用 Java 构建前端并与 Tomcat 服务器、数据库后端集成。</p>
+        <p class="name"><span class="lang-zh">Java Web 开发</span><span class="lang-en">Java Web Developer</span><small>Neusoft · 2019</small></p>
+        <p class="what"><span class="lang-zh">为银行设计开发金融管理系统，用 Java 构建前端并与 Tomcat 服务器、数据库后端集成。</span><span class="lang-en">Designed and built financial management systems for banks — a Java front end integrated with a Tomcat server and database backend.</span></p>
       </li>
       <li>
-        <p class="name">早期跨界经历<small>Quntai · EF English First · 2016 – 2018</small></p>
-        <p class="what">用 Java/SQLite 开发电商销售 App，担任外教课堂助教。</p>
+        <p class="name"><span class="lang-zh">早期跨界经历</span><span class="lang-en">Earlier &amp; Cross-field Roles</span><small>Quntai · EF English First · <span class="lang-zh">山东科技大学</span><span class="lang-en">Shandong Univ. of Science &amp; Technology</span> · 2016 – 2018</small></p>
+        <p class="what"><span class="lang-zh">用 Java/SQLite 开发电商销售 App，担任外教课堂助教，并负责新媒体部门公众号与微博的内容创作与活动报道。</span><span class="lang-en">Built an e-commerce sales app with Java/SQLite, assisted foreign teachers in the classroom, and created content for a new-media department's WeChat and microblog.</span></p>
       </li>
     </ol>
   </section>
@@ -693,21 +744,21 @@ footer.foot {
   <section>
     <div class="section-head">
       <p class="section-num">04 · PROJECTS</p>
-      <h2 class="section-title">项目</h2>
+      <h2 class="section-title"><span class="lang-zh">项目</span><span class="lang-en">Projects</span></h2>
     </div>
 
     <ol class="features">
       <li>
         <p class="name">AM Multilingual<small>Python</small></p>
-        <p class="what">借助 Gemini API 与 MusicBrainz，自动修正并本地化 Apple Music 资料库的元数据。<a href="https://github.com/soulofshadow/AM_Multilingual" target="_blank" rel="noopener">查看仓库 →</a></p>
+        <p class="what"><span class="lang-zh">借助 Gemini API 与 MusicBrainz，自动修正并本地化 Apple Music 资料库的元数据。<a href="https://github.com/soulofshadow/AM_Multilingual" target="_blank" rel="noopener">查看仓库 →</a></span><span class="lang-en">Automatically fixes and localizes Apple Music library metadata using the Gemini API and MusicBrainz. <a href="https://github.com/soulofshadow/AM_Multilingual" target="_blank" rel="noopener">View repo →</a></span></p>
       </li>
       <li>
         <p class="name">Job Salary Prediction<small>Jupyter Notebook</small></p>
-        <p class="what">一个端到端的机器学习项目，基于岗位特征预测薪资水平。<a href="https://github.com/soulofshadow/zeng-MLproject-Job_Salary_Prediction" target="_blank" rel="noopener">查看仓库 →</a></p>
+        <p class="what"><span class="lang-zh">一个端到端的机器学习项目，基于岗位特征预测薪资水平。<a href="https://github.com/soulofshadow/zeng-MLproject-Job_Salary_Prediction" target="_blank" rel="noopener">查看仓库 →</a></span><span class="lang-en">An end-to-end machine learning project predicting salary from job features. <a href="https://github.com/soulofshadow/zeng-MLproject-Job_Salary_Prediction" target="_blank" rel="noopener">View repo →</a></span></p>
       </li>
       <li>
         <p class="name">KELM for UMLS<small>Jupyter Notebook</small></p>
-        <p class="what">围绕 UMLS 医学本体的知识增强语言建模实验，是医疗问答研究的延伸。<a href="https://github.com/soulofshadow/KELM_for_UMLS" target="_blank" rel="noopener">查看仓库 →</a></p>
+        <p class="what"><span class="lang-zh">围绕 UMLS 医学本体的知识增强语言建模实验，是医疗问答研究的延伸。<a href="https://github.com/soulofshadow/KELM_for_UMLS" target="_blank" rel="noopener">查看仓库 →</a></span><span class="lang-en">Knowledge-enhanced language modeling experiments around the UMLS medical ontology, extending the medical QA research. <a href="https://github.com/soulofshadow/KELM_for_UMLS" target="_blank" rel="noopener">View repo →</a></span></p>
       </li>
     </ol>
   </section>
@@ -716,8 +767,8 @@ footer.foot {
   <section>
     <div class="section-head">
       <p class="section-num">05 · CONNECT</p>
-      <h2 class="section-title">链接</h2>
-      <p class="section-lede">想聊研究、合作，或者只是打个招呼，都欢迎在这些地方找到我。</p>
+      <h2 class="section-title"><span class="lang-zh">链接</span><span class="lang-en">Connect</span></h2>
+      <p class="section-lede"><span class="lang-zh">想聊研究、合作，或者只是打个招呼，都欢迎在这些地方找到我。</span><span class="lang-en">Whether you'd like to talk research, collaborate, or just say hi — you can find me here.</span></p>
     </div>
 
     <div class="links-grid">
@@ -739,7 +790,7 @@ footer.foot {
       </a>
       <a class="link-card" href="https://hevy.com/user/soulofshadow" target="_blank" rel="noopener">
         <p class="lc-name">Hevy</p>
-        <p class="lc-handle">健身记录 · @soulofshadow</p>
+        <p class="lc-handle"><span class="lang-zh">健身记录 · @soulofshadow</span><span class="lang-en">Workout log · @soulofshadow</span></p>
       </a>
     </div>
   </section>
@@ -759,10 +810,36 @@ footer.foot {
         <a href="https://www.instagram.com/soulofshadowz" target="_blank" rel="noopener">Instagram</a> &middot;
         <a href="https://hevy.com/user/soulofshadow" target="_blank" rel="noopener">Hevy</a>
       </div>
-      <p class="ethos">要做一个能耀眼自己的人呢。</p>
+      <p class="ethos"><span class="lang-zh">要做一个能耀眼自己的人呢。</span><span class="lang-en">Be someone who can dazzle even yourself.</span></p>
     </div>
   </footer>
 
 </main>
+
+<script>
+(function () {
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.lang-toggle button'));
+  var stored = localStorage.getItem('lang');
+  var lang = (stored === 'en' || stored === 'zh') ? stored : 'zh';
+
+  function apply(l) {
+    document.body.classList.remove('lang-zh', 'lang-en');
+    document.body.classList.add('lang-' + l);
+    document.documentElement.lang = (l === 'en') ? 'en' : 'zh-CN';
+    buttons.forEach(function (b) {
+      var on = b.dataset.lang === l;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    try { localStorage.setItem('lang', l); } catch (e) {}
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.dataset.lang); });
+  });
+
+  apply(lang);
+})();
+</script>
 </body>
 </html>
