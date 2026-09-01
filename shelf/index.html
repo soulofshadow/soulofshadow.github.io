@@ -248,8 +248,10 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 }
 .person .ph2{display:grid;place-items:center;font-size:24px;color:var(--faint)}
 .person .av{flex:none}
-/* reserve two lines for the name so every character line starts at the same y */
-.person .n{font-size:12.5px;line-height:1.3;font-weight:530;min-height:2.6em;
+/* No reserved height: the role sits directly under the name. Names that wrap
+   push their own role down a line, which reads better than a gap under every
+   single-line name. */
+.person .n{font-size:12.5px;line-height:1.3;font-weight:530;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .person .r{font-size:11px;line-height:1.35;color:var(--faint);margin-top:2px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
