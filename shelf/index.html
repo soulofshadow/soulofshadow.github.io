@@ -13,7 +13,7 @@
   --fg:#e9ecf1; --dim:#98a0ad; --faint:#636b78;
   --line:#242932; --line2:#2f3540;
   --accent:#e0a94a; --accent-soft:#e0a94a22; --on-accent:#1a1305;
-  --red:#e05f5f; --green:#5cbb7a; --blue:#5b9bd5; --violet:#9b7fd4;
+  --red:#e05f5f; --red-line:#6d3434; --green:#5cbb7a; --blue:#5b9bd5; --violet:#9b7fd4;
   --shadow:0 10px 40px -12px #000a;
   --radius:14px;
   --maxw:1360px;
@@ -23,7 +23,7 @@
   --fg:#1a1b1e; --dim:#5d636e; --faint:#8b919c;
   --line:#e2dfd9; --line2:#d2cec6;
   --accent:#a97516; --accent-soft:#a9751618; --on-accent:#fff;
-  --red:#c14545; --green:#3f8f59; --blue:#3a72a8; --violet:#7458b0;
+  --red:#c14545; --red-line:#e3b6b6; --green:#3f8f59; --blue:#3a72a8; --violet:#7458b0;
   --shadow:0 8px 30px -14px #0003;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -98,7 +98,8 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 .btn:active{transform:scale(.97)}
 .btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}
 .btn.primary:hover{filter:brightness(1.08)}
-.btn.danger:hover{border-color:var(--red);color:var(--red)}
+.btn.danger{color:var(--red);border-color:var(--red-line)}
+.btn.danger:hover{background:var(--red);border-color:var(--red);color:#fff}
 .btn.sm{padding:5px 11px;font-size:13px;border-radius:8px}
 .chip{
   padding:6px 13px;border-radius:999px;border:1px solid var(--line);
