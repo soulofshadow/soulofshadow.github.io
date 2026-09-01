@@ -888,6 +888,27 @@ function listRow(e) {
   </button>`;
 }
 
+/* Paging by whole rows means knowing the column count, which is width-dependent.
+   The laid-out grid is the only source that can't drift from the CSS — the
+   arithmetic below is just a first-render fallback, and has to track the 640px
+   breakpoint where minmax/gap change. */
+function gridCols(host) {
+  const g = host && host.querySelector(".grid");
+  if (g) {
+    const n = getComputedStyle(g).gridTemplateColumns.split(" ").filter(Boolean).length;
+    if (n) return n;
+  }
+  const mobile = innerWidth <= 640;
+  const min = mobile ? 104 : 138, gap = mobile ? 10 : 15;
+  const w = (host && host.clientWidth) || 0;
+  if (!w) return mobile ? 3 : 6;
+  return Math.max(1, Math.floor((w + gap) / (min + gap)));
+}
+
+let libPages = 1;                    // library: 5 rows per page
+let libShowAll = false;
+const LIB_ROWS = 5;
+
 const decadeOf = e => (e.year && /^\d{4}$/.test(e.year))
   ? String(Math.floor(+e.year / 10) * 10) : "";
 
@@ -982,6 +1003,8 @@ function renderMoreFilters() {
     `;
 }
 
+function resetLibPaging() { libPages = 1; libShowAll = false; }
+
 function renderLibrary() {
   renderFilters();
   const list = visibleEntries();
@@ -1007,9 +1030,23 @@ function renderLibrary() {
     return;
   }
 
-  body.innerHTML = PREFS.view === "grid"
-    ? `<div class="grid">${list.map(e => posterCard(e)).join("")}</div>`
-    : `<div class="list">${list.map(listRow).join("")}</div>`;
+  const cols  = gridCols(body);
+  const step  = PREFS.view === "grid" ? LIB_ROWS * cols : LIB_ROWS * 5;
+  const limit = libShowAll ? list.length : Math.min(list.length, libPages * step);
+  const page  = list.slice(0, limit);
+  const rest  = list.length - limit;
+
+  body.innerHTML = (PREFS.view === "grid"
+    ? `<div class="grid">${page.map(e => posterCard(e)).join("")}</div>`
+    : `<div class="list">${page.map(listRow).join("")}</div>`)
+    + (rest > 0
+      ? `<div class="row" style="justify-content:center;gap:11px;margin-top:26px">
+           <button class="btn" data-libmore>加载更多 · 还有 ${rest} 条</button>
+           <button class="btn sm" data-liball>显示全部</button>
+         </div>`
+      : (list.length > step
+          ? `<div class="tiny faint" style="text-align:center;margin-top:26px">已显示全部 ${list.length} 条</div>`
+          : ""));
 }
 
 /* ============================================================
@@ -1031,8 +1068,9 @@ const BROWSE = [
 ];
 
 let searchSeq = 0;
+const FEED_ROWS = 2;                 // search/charts: reveal two full rows at a time
 let feed = { mode: "browse", key: "trend_week", q: "", page: 1, totalPages: 1,
-             hits: [], people: [], person: null, loading: false };
+             rows: FEED_ROWS, hits: [], people: [], person: null, loading: false };
 
 function resultCard(h) {
   const owned = !!find(h.id);
@@ -1097,11 +1135,17 @@ function renderFeed() {
       : `<div class="empty"><div class="big">📭</div><div class="tiny">这个榜单暂时没有内容</div></div>`);
     return;
   }
+  const cols  = gridCols(body);
+  const limit = Math.min(feed.hits.length, feed.rows * cols);
+  const shown = feed.hits.slice(0, limit);
+  const hasHidden = limit < feed.hits.length;
+  const canFetch  = feed.page < feed.totalPages;
+
   body.innerHTML = head + people +
-    `<div class="grid">${feed.hits.map(resultCard).join("")}</div>` +
-    (feed.page < feed.totalPages
+    `<div class="grid">${shown.map(resultCard).join("")}</div>` +
+    (hasHidden || canFetch
       ? `<div style="text-align:center;margin-top:26px">
-           <button class="btn" id="moreBtn">加载更多 · 第 ${feed.page + 1} 页</button>
+           <button class="btn" id="moreBtn">加载更多</button>
          </div>`
       : `<div class="tiny faint" style="text-align:center;margin-top:26px">没有更多了</div>`);
   body._hits = feed.hits;
@@ -1124,7 +1168,7 @@ async function loadFeed(reset = false) {
 
   const seq = ++searchSeq;
   if (reset) {
-    feed.page = 1; feed.hits = []; feed.totalPages = 1;
+    feed.page = 1; feed.hits = []; feed.totalPages = 1; feed.rows = FEED_ROWS;
     if (feed.mode !== "search") feed.people = [];
     renderBrowseBar();
     body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; 加载中…</div>`;
@@ -2100,34 +2144,40 @@ function wire() {
   });
 
   /* --- library controls --- */
-  $("#libQ").addEventListener("input", renderLibrary);
+  let libQTimer;
+  $("#libQ").addEventListener("input", () => {
+    clearTimeout(libQTimer);
+    libQTimer = setTimeout(() => { resetLibPaging(); renderLibrary(); }, 160);
+  });
   $("#libSort").addEventListener("change", ev => {
-    PREFS.sort = ev.target.value; savePrefs(); renderLibrary();
+    PREFS.sort = ev.target.value; savePrefs(); resetLibPaging(); renderLibrary();
   });
   $("#vGrid").addEventListener("click", () => setView("grid"));
   $("#vList").addEventListener("click", () => setView("list"));
 
   $("#fType").addEventListener("click", ev => {
     const c = ev.target.closest("[data-ftype]");
-    if (c) { PREFS.fType = c.dataset.ftype; savePrefs(); renderLibrary(); }
+    if (c) { PREFS.fType = c.dataset.ftype; savePrefs(); resetLibPaging(); renderLibrary(); }
   });
   $("#fStatus").addEventListener("click", ev => {
     const c = ev.target.closest("[data-fstatus]");
-    if (c) { PREFS.fStatus = c.dataset.fstatus; savePrefs(); renderLibrary(); }
+    if (c) { PREFS.fStatus = c.dataset.fstatus; savePrefs(); resetLibPaging(); renderLibrary(); }
   });
   $("#fMore").addEventListener("change", ev => {
     const map = { selGenre: "fGenre", selDecade: "fDecade" };
     const key = map[ev.target.id];
     if (!key) return;
-    PREFS[key] = ev.target.value; savePrefs(); renderLibrary();
+    PREFS[key] = ev.target.value; savePrefs(); resetLibPaging(); renderLibrary();
   });
   $("#libCount").addEventListener("click", ev => {
     if (!ev.target.closest("#clearFilters")) return;
     Object.assign(PREFS, { fType: "all", fStatus: "all", fGenre: "all", fDecade: "all" });
     $("#libQ").value = "";
-    savePrefs(); renderLibrary();
+    savePrefs(); resetLibPaging(); renderLibrary();
   });
   $("#libBody").addEventListener("click", ev => {
+    if (ev.target.closest("[data-libmore]")) { libPages++; renderLibrary(); return; }
+    if (ev.target.closest("[data-liball]"))  { libShowAll = true; renderLibrary(); return; }
     const c = ev.target.closest("[data-open]");
     if (c) openSheet(c.dataset.open);
   });
@@ -2162,7 +2212,13 @@ function wire() {
   });
 
   $("#tmBody").addEventListener("click", ev => {
-    if (ev.target.closest("#moreBtn")) { feed.page++; loadFeed(); return; }
+    if (ev.target.closest("#moreBtn")) {
+      feed.rows += FEED_ROWS;
+      const need = feed.rows * gridCols($("#tmBody"));
+      if (need > feed.hits.length && feed.page < feed.totalPages) { feed.page++; loadFeed(); }
+      else renderFeed();
+      return;
+    }
 
     const pc = ev.target.closest("[data-person]");
     if (pc) {
@@ -2457,6 +2513,33 @@ function wire() {
     syncNow({ silent: true });
   });
 
+  // A "row" is only meaningful given a column count, and that follows the width.
+  // ResizeObserver catches every cause (window resize, rotation, pane resize);
+  // re-rendering only changes height, and the guard below ignores that anyway.
+  const watched = [
+    [$("#libBody"), () => { if (page === "library") renderLibrary(); }],
+    [$("#tmBody"),  () => { if (page === "search" && feed.hits.length) renderFeed(); }],
+  ];
+  const lastCols = new Map();
+  const recheck = () => {
+    for (const [host, redraw] of watched) {
+      const n = gridCols(host);
+      if (!n || lastCols.get(host) === n) continue;   // re-rendering changes height, not columns
+      lastCols.set(host, n);
+      redraw();
+    }
+  };
+  if (typeof ResizeObserver === "function") {
+    const ro = new ResizeObserver(recheck);
+    for (const [host] of watched) ro.observe(host);
+  }
+  // ResizeObserver is the precise one, but it is tied to the rendering loop; the
+  // window events cover the cases where frames aren't being produced.
+  let colTimer;
+  const nudge = () => { clearTimeout(colTimer); colTimer = setTimeout(recheck, 150); };
+  addEventListener("resize", nudge);
+  addEventListener("orientationchange", nudge);
+
   /* --- keyboard --- */
   document.addEventListener("keydown", ev => {
     if (ev.key === "Escape" && openId) { closeSheet(); return; }
@@ -2468,7 +2551,7 @@ function wire() {
 }
 
 function setView(v) {
-  PREFS.view = v; savePrefs();
+  PREFS.view = v; savePrefs(); resetLibPaging();
   $("#vGrid").setAttribute("aria-pressed", String(v === "grid"));
   $("#vList").setAttribute("aria-pressed", String(v === "list"));
   renderLibrary();
