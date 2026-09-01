@@ -323,6 +323,7 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
         <option value="ja-JP">日本語</option>
       </select>
     </div>
+    <div class="filterbar" id="browseBar"></div>
     <div id="tmBody"></div>
   </section>
 
@@ -357,6 +358,21 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
           <option value="ja-JP">日本語</option>
         </select>
         <p class="tiny faint" style="margin-top:7px">影响搜索结果与刷新时抓取的标题、简介。</p>
+      </div>
+
+      <div class="blk">
+        <div class="sec-title">院线地区</div>
+        <select class="field" id="setRegion">
+          <option value="">不限</option>
+          <option value="IT">意大利</option>
+          <option value="CN">中国大陆</option>
+          <option value="US">美国</option>
+          <option value="GB">英国</option>
+          <option value="JP">日本</option>
+          <option value="HK">中国香港</option>
+          <option value="TW">中国台湾</option>
+        </select>
+        <p class="tiny faint" style="margin-top:7px">只影响「正在热映」和「即将上映」两个榜单排片。</p>
       </div>
 
       <div class="blk">
@@ -445,7 +461,8 @@ const STATUS_ORDER = ["plan", "watching", "done", "onhold", "dropped"];
 /* ---------------- state ---------------- */
 
 let DB    = { version: VERSION, entries: [], deleted: {} };
-let PREFS = { lang: "zh-CN", theme: "dark", view: "grid", sort: "added", fType: "all", fStatus: "all" };
+let PREFS = { lang: "zh-CN", theme: "dark", view: "grid", sort: "added",
+              fType: "all", fStatus: "all", browse: "trend_week", region: "" };
 let KEY   = "";
 let GH    = { token: "", gist: "", auto: true, lastSync: 0 };
 let page  = "library";
@@ -803,67 +820,138 @@ function renderLibrary() {
    RENDER — TMDb search
    ============================================================ */
 
-let searchSeq = 0;
+/* Discovery rows. `type` is forced onto results from the endpoints that
+   don't return media_type; `region` marks the two that care about it. */
+const BROWSE = [
+  { key: "trend_week", label: "本周热门",   path: "/trending/all/week" },
+  { key: "trend_day",  label: "今日热门",   path: "/trending/all/day" },
+  { key: "pop_movie",  label: "热门电影",   path: "/movie/popular",     type: "movie" },
+  { key: "pop_tv",     label: "热门剧集",   path: "/tv/popular",        type: "tv" },
+  { key: "top_movie",  label: "高分电影",   path: "/movie/top_rated",   type: "movie" },
+  { key: "top_tv",     label: "高分剧集",   path: "/tv/top_rated",      type: "tv" },
+  { key: "now_movie",  label: "正在热映",   path: "/movie/now_playing", type: "movie", region: true },
+  { key: "soon_movie", label: "即将上映",   path: "/movie/upcoming",    type: "movie", region: true },
+  { key: "air_tv",     label: "本周播出",   path: "/tv/on_the_air",     type: "tv" },
+];
 
-async function runSearch(q) {
+let searchSeq = 0;
+let feed = { mode: "browse", key: "trend_week", q: "", page: 1, totalPages: 1, hits: [], loading: false };
+
+function resultCard(h) {
+  const owned = !!find(h.id);
+  const src = IMG(h.poster, "w342");
+  return `
+  <button class="card" data-add="${esc(h.id)}" data-tmdb="${h.tmdbId}" data-type="${h.mediaType}">
+    <div class="poster">
+      ${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">`
+            : `<div class="ph">${esc(h.title)}</div>`}
+      ${owned ? `<span class="badge s-done">已在书架</span>`
+              : `<span class="badge">${h.mediaType === "movie" ? "电影" : "剧集"}</span>`}
+      ${h.tmdbScore ? `<span class="score-pill">${h.tmdbScore.toFixed(1)}</span>` : ""}
+    </div>
+    <div class="t">${esc(h.title)}</div>
+    <div class="y">${h.year || "—"}</div>
+  </button>`;
+}
+
+function renderBrowseBar() {
+  const active = feed.mode === "browse" ? feed.key : null;
+  $("#browseBar").innerHTML = BROWSE.map(b =>
+    `<button class="chip" data-browse="${b.key}" aria-pressed="${active === b.key}">${b.label}</button>`).join("");
+}
+
+function renderFeed() {
   const body = $("#tmBody");
-  const seq  = ++searchSeq;
+  renderBrowseBar();
+
+  if (!feed.hits.length) {
+    body.innerHTML = feed.mode === "search"
+      ? `<div class="empty"><div class="big">🤷</div><div class="tiny">没找到「${esc(feed.q)}」</div></div>`
+      : `<div class="empty"><div class="big">📭</div><div class="tiny">这个榜单暂时没有内容</div></div>`;
+    return;
+  }
+  body.innerHTML =
+    `<div class="grid">${feed.hits.map(resultCard).join("")}</div>` +
+    (feed.page < feed.totalPages
+      ? `<div style="text-align:center;margin-top:26px">
+           <button class="btn" id="moreBtn">加载更多 · 第 ${feed.page + 1} 页</button>
+         </div>`
+      : `<div class="tiny faint" style="text-align:center;margin-top:26px">没有更多了</div>`);
+  body._hits = feed.hits;
+}
+
+async function loadFeed(reset = false) {
+  const body = $("#tmBody");
 
   if (!KEY) {
+    renderBrowseBar();
     body.innerHTML = `<div class="empty">
       <div class="big">🔑</div>
       <div style="font-size:15px;color:var(--dim);margin-bottom:6px">还没有 TMDb key</div>
-      <div class="tiny">去「设置」里填一个，搜索和海报才能用</div>
+      <div class="tiny">去「设置」里填一个，搜索和榜单才能用</div>
     </div>`;
     return;
   }
-  if (!q) {
-    body.innerHTML = `<div class="empty">
-      <div class="big">🔎</div>
-      <div class="tiny">输入片名开始搜索 · 中英日文都认<br>找到后点海报即可加入书架</div>
-    </div>`;
-    return;
+  if (feed.loading) return;
+  feed.loading = true;
+
+  const seq = ++searchSeq;
+  if (reset) {
+    feed.page = 1; feed.hits = []; feed.totalPages = 1;
+    renderBrowseBar();
+    body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; 加载中…</div>`;
+  } else {
+    const b = $("#moreBtn");
+    if (b) { b.disabled = true; b.innerHTML = `<span class="spinner"></span> 加载中…`; }
   }
 
-  body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; 搜索中…</div>`;
   try {
-    const d = await tmdb("/search/multi", { query: q, include_adult: "false", page: 1 });
-    if (seq !== searchSeq) return;                       // a newer search won
+    let d, forced = null;
+    if (feed.mode === "search") {
+      d = await tmdb("/search/multi", { query: feed.q, include_adult: "false", page: feed.page });
+    } else {
+      const cat = BROWSE.find(b => b.key === feed.key) || BROWSE[0];
+      forced = cat.type || null;
+      d = await tmdb(cat.path, {
+        page: feed.page,
+        ...(cat.region && PREFS.region ? { region: PREFS.region } : {}),
+      });
+    }
+    if (seq !== searchSeq) return;                        // a newer request won
 
-    const hits = (d.results || [])
+    feed.totalPages = Math.min(d.total_pages || 1, 500);  // TMDb caps paging at 500
+    const fresh = (d.results || [])
+      .map(r => forced ? { ...r, media_type: forced } : r)
       .filter(r => r.media_type === "movie" || r.media_type === "tv")
       .map(fromTMDb);
 
-    if (!hits.length) {
-      body.innerHTML = `<div class="empty"><div class="big">🤷</div><div class="tiny">没找到「${esc(q)}」</div></div>`;
-      return;
-    }
-    body.innerHTML = `<div class="grid">${hits.map(h => {
-      const owned = !!find(h.id);
-      const src = IMG(h.poster, "w342");
-      return `
-      <button class="card" data-add="${esc(h.id)}" data-tmdb="${h.tmdbId}" data-type="${h.mediaType}">
-        <div class="poster">
-          ${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">`
-                : `<div class="ph">${esc(h.title)}</div>`}
-          ${owned ? `<span class="badge s-done">已在书架</span>`
-                  : `<span class="badge">${h.mediaType === "movie" ? "电影" : "剧集"}</span>`}
-          ${h.tmdbScore ? `<span class="score-pill">${h.tmdbScore.toFixed(1)}</span>` : ""}
-        </div>
-        <div class="t">${esc(h.title)}</div>
-        <div class="y">${h.year || "—"}</div>
-      </button>`;
-    }).join("")}</div>`;
-
-    // stash results so the click handler can add without re-fetching
-    body._hits = hits;
+    const seen = new Set(feed.hits.map(h => h.id));
+    for (const h of fresh) if (!seen.has(h.id)) feed.hits.push(h);
+    renderFeed();
   } catch (err) {
     if (seq !== searchSeq) return;
+    renderBrowseBar();
     body.innerHTML = `<div class="empty"><div class="big">⚠️</div><div class="tiny">${
       err.message === "BAD_KEY" ? "API key 无效 —— 去设置里检查一下"
       : err.message === "NO_KEY" ? "还没填 API key"
       : "请求失败：" + esc(err.message)}</div></div>`;
+  } finally {
+    feed.loading = false;
   }
+}
+
+function showBrowse(key) {
+  feed.mode = "browse";
+  feed.key  = key || feed.key;
+  PREFS.browse = feed.key; savePrefs();
+  $("#tmQ").value = "";
+  loadFeed(true);
+}
+
+function showSearch(q) {
+  feed.mode = "search";
+  feed.q = q;
+  loadFeed(true);
 }
 
 /* ============================================================
@@ -1391,7 +1479,10 @@ function go(p) {
   if (p === "stats") renderStats();
   if (p === "library") renderLibrary();
   if (p === "search") {
-    if (!$("#tmBody").innerHTML.trim()) runSearch($("#tmQ").value.trim());
+    if (!$("#tmBody").innerHTML.trim()) {
+      const q = $("#tmQ").value.trim();
+      q ? showSearch(q) : showBrowse();
+    }
     setTimeout(() => $("#tmQ").focus(), 40);
   }
   window.scrollTo(0, 0);
@@ -1443,15 +1534,21 @@ function wire() {
   $("#tmQ").addEventListener("input", ev => {
     clearTimeout(searchDebounce);
     const v = ev.target.value.trim();
-    searchDebounce = setTimeout(() => runSearch(v), 380);
+    searchDebounce = setTimeout(() => v ? showSearch(v) : showBrowse(), 380);
   });
   $("#tmLang").addEventListener("change", ev => {
     PREFS.lang = ev.target.value; savePrefs();
     $("#setLang").value = PREFS.lang;
     seasonCache.clear();
-    runSearch($("#tmQ").value.trim());
+    feed.mode === "search" ? showSearch(feed.q) : showBrowse();
   });
+  $("#browseBar").addEventListener("click", ev => {
+    const c = ev.target.closest("[data-browse]");
+    if (c) showBrowse(c.dataset.browse);
+  });
+
   $("#tmBody").addEventListener("click", ev => {
+    if (ev.target.closest("#moreBtn")) { feed.page++; loadFeed(); return; }
     const c = ev.target.closest("[data-add]");
     if (!c) return;
     const hits = $("#tmBody")._hits || [];
@@ -1595,6 +1692,12 @@ function wire() {
     i.type = i.type === "password" ? "text" : "password";
     $("#keyShow").textContent = i.type === "password" ? "显示" : "隐藏";
   });
+  $("#setRegion").addEventListener("change", ev => {
+    PREFS.region = ev.target.value; savePrefs();
+    const cat = BROWSE.find(b => b.key === feed.key);
+    if (feed.mode === "browse" && cat && cat.region) loadFeed(true);
+    toast(ev.target.value ? "院线地区已切换" : "已取消地区限定");
+  });
   $("#setLang").addEventListener("change", ev => {
     PREFS.lang = ev.target.value; savePrefs();
     $("#tmLang").value = PREFS.lang;
@@ -1703,6 +1806,8 @@ function init() {
   $("#ghToken").value = GH.token;
   $("#ghGist").value  = GH.gist;
   $("#ghAuto").checked = GH.auto !== false;
+  $("#setRegion").value = PREFS.region || "";
+  feed.key = PREFS.browse || "trend_week";
   $("#verLine").textContent = `本地共 ${DB.entries.length} 条记录 · 数据格式 v${VERSION}`;
   setView(PREFS.view);
 
