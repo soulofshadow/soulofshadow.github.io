@@ -826,6 +826,19 @@ async function ensureDetail(e, force = false) {
   return e;
 }
 
+const castCache = new Map();
+
+async function ensureCast(e) {
+  const k = `${e.mediaType}-${e.tmdbId}-${PREFS.lang}`;
+  if (castCache.has(k)) return castCache.get(k);
+  const d = await tmdb(`/${e.mediaType}/${e.tmdbId}/credits`);
+  const cast = (d.cast || []).slice(0, 12).map(p => ({
+    id: p.id, name: p.name, character: p.character || "", photo: p.profile_path,
+  }));
+  castCache.set(k, cast);
+  return cast;
+}
+
 const seasonCache = new Map();
 async function fetchSeason(tvId, n) {
   const k = `${tvId}/${n}/${PREFS.lang}`;
@@ -1506,11 +1519,12 @@ function bindTopCard() {
   const card = $("#deckStage .sc.top");
   if (!card) return;
   const yes = $(".stamp.yes", card), no = $(".stamp.no", card);
-  let id = null, x0 = 0, y0 = 0, dx = 0, dy = 0, dragging = false;
+  let id = null, x0 = 0, y0 = 0, dx = 0, dy = 0, dragging = false, t0 = 0, moved = false;
 
   card.addEventListener("pointerdown", ev => {
     if (ev.button) return;
     id = ev.pointerId; x0 = ev.clientX; y0 = ev.clientY; dragging = true;
+    t0 = Date.now(); moved = false;
     card.setPointerCapture(id);
     card.classList.remove("glide");
   });
@@ -1519,6 +1533,7 @@ function bindTopCard() {
     if (!dragging || ev.pointerId !== id) return;
     dx = ev.clientX - x0; dy = ev.clientY - y0;
     if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    moved = true;
     card.style.transform = `translate(${dx}px, ${dy * 0.28}px) rotate(${dx / 22}deg)`;
     yes.style.opacity = Math.max(0, Math.min(1, dx / 90));
     no.style.opacity  = Math.max(0, Math.min(1, -dx / 90));
@@ -1528,6 +1543,18 @@ function bindTopCard() {
     if (!dragging || (ev.pointerId !== undefined && ev.pointerId !== id)) return;
     dragging = false;
     try { card.releasePointerCapture(id); } catch (e) {}
+
+    // A tap, not a drag: show the full record instead of judging the card.
+    if (!moved && Date.now() - t0 < 500) {
+      const c = deck.cards[deck.i];
+      if (c) {
+        const draftCard = blankEntry({ ...c });
+        delete draftCard.why;
+        openSheet(c.id, draftCard);
+      }
+      return;
+    }
+
     const hit = Math.abs(dx) > 92;
     card.classList.add("glide");
     if (hit) {
@@ -1606,6 +1633,27 @@ function seasonsBlock(e) {
   </div>`;
 }
 
+function castBlock(e) {
+  const cast = castCache.get(`${e.mediaType}-${e.tmdbId}-${PREFS.lang}`);
+  if (!cast) return "";           // still loading, or unavailable
+  if (!cast.length) return "";
+  return `
+  <div class="blk">
+    <div class="sec-title">主要演员</div>
+    <div class="people">
+      ${cast.map(p => `
+        <button class="person" data-cast="${p.id}" data-castname="${esc(p.name)}"
+                data-castphoto="${esc(p.photo || "")}" title="${esc(p.name)}">
+          ${IMG(p.photo, "w185")
+            ? `<img class="av" src="${IMG(p.photo, "w185")}" alt="" loading="lazy">`
+            : `<div class="av ph2">🎭</div>`}
+          <div class="n">${esc(p.name)}</div>
+          ${p.character ? `<div class="r">${esc(p.character)}</div>` : ""}
+        </button>`).join("")}
+    </div>
+  </div>`;
+}
+
 function sheetHTML(e) {
   const back = IMG(e.backdrop, "w780");
   const post = IMG(e.poster, "w500");
@@ -1634,6 +1682,8 @@ function sheetHTML(e) {
         <div class="sub">${sub.map((s, i) => `<span${i ? ' class="dot-sep"' : ""}>${s}</span>`).join("")}</div>
       </div>
     </div>
+
+    ${castBlock(e)}
 
     ${e.overview ? `<div class="blk"><p class="ov">${esc(e.overview)}</p>
       ${e.genres && e.genres.length ? `<div class="genres">${e.genres.map(g => `<span>${esc(g)}</span>`).join("")}</div>` : ""}
@@ -1710,9 +1760,16 @@ async function openSheet(id, previewEntry = null) {
       if (openId === id) { $("#sheet").innerHTML = sheetHTML(current() || e); renderLibrary(); }
     } catch (err) { console.warn("detail fetch failed", err); }
   }
+  if (KEY) {
+    try {
+      await ensureCast(e);
+      if (openId === id) refreshSheet();
+    } catch (err) { console.warn("cast fetch failed", err); }
+  }
 }
 
 function closeSheet() {
+  const wasId = openId;          // capture before clearing, the deck needs it below
   openId = null;
   draft = null;
   $("#scrim").classList.remove("on");
@@ -1720,6 +1777,16 @@ function closeSheet() {
   document.body.style.overflow = "";
   renderLibrary();
   if (page === "search" && feed.hits.length) renderFeed();   // refresh 已在书架 badges
+  if (page === "deck") {
+    // if the sheet added it to the library, that card has been judged
+    const c = deck.cards[deck.i];
+    if (c && c.id === wasId && find(wasId)) {
+      deck.history.push({ id: wasId, action: find(wasId).status === "done" ? "yes" : "want" });
+      deck.i++;
+      if (deck.cards.length - deck.i <= 3) loadDeck(true);
+    }
+    renderDeck();
+  }
 }
 
 function refreshSheet() {
@@ -2250,6 +2317,16 @@ function wire() {
     if (!e) return;
 
     if (ev.target.closest("[data-close]")) { closeSheet(); return; }
+
+    const cast = ev.target.closest("[data-cast]");
+    if (cast) {
+      const p = { id: +cast.dataset.cast, name: cast.dataset.castname,
+                  photo: cast.dataset.castphoto || null };
+      closeSheet();
+      go("search");
+      showPerson(p);
+      return;
+    }
 
     // Opening a search result only previews it; acting on it is what adds it.
     if (ev.target.closest("[data-status],[data-fav],[data-markall],[data-allseason],[data-noneseason]")) {
