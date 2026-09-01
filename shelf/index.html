@@ -188,6 +188,50 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .y{font-size:12px;color:var(--faint);margin-top:2px;font-variant-numeric:tabular-nums}
 
+/* ---------- swipe deck ---------- */
+.deck-wrap{max-width:360px;margin:0 auto}
+.deck-stage{position:relative;aspect-ratio:2/3;margin-bottom:18px;touch-action:pan-y}
+.sc{
+  position:absolute;inset:0;border-radius:18px;overflow:hidden;background:var(--panel2);
+  border:1px solid var(--line2);box-shadow:0 18px 50px -18px #000c;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  will-change:transform;user-select:none;-webkit-user-select:none;
+}
+.sc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sc .veil{position:absolute;inset:0;background:linear-gradient(to top,#000e 4%,#0009 32%,transparent 62%)}
+.sc .meta{position:relative;padding:16px 17px 18px;color:#fff}
+.sc .meta h3{font-size:19px;line-height:1.25;font-weight:640;margin-bottom:5px}
+.sc .meta .sub{font-size:12.5px;opacity:.82;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.sc .meta .ov{font-size:12.5px;line-height:1.6;opacity:.7;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sc .why{
+  position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:7px;font-size:11.5px;
+  background:#000a;color:#fff;backdrop-filter:blur(6px);max-width:calc(100% - 24px);
+}
+.sc.top{cursor:grab}
+.sc.top:active{cursor:grabbing}
+.sc.glide{transition:transform .32s cubic-bezier(.3,.8,.4,1),opacity .32s}
+.stamp{
+  position:absolute;top:22px;padding:7px 16px;border-radius:10px;font-size:19px;font-weight:800;
+  letter-spacing:.06em;border:3px solid currentColor;opacity:0;pointer-events:none;
+  background:#000a;backdrop-filter:blur(4px);
+}
+.stamp.yes{right:18px;color:var(--green);transform:rotate(11deg)}
+.stamp.no{left:18px;color:var(--red);transform:rotate(-11deg)}
+.deck-actions{display:flex;justify-content:center;align-items:center;gap:15px}
+.deck-btn{
+  width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:22px;
+  border:1px solid var(--line2);background:var(--panel);transition:transform .1s,border-color .13s;
+}
+.deck-btn:hover{border-color:currentColor}
+.deck-btn:active{transform:scale(.9)}
+.deck-btn.sm{width:44px;height:44px;font-size:17px}
+.deck-btn.no{color:var(--red)}
+.deck-btn.yes{color:var(--green)}
+.deck-btn.want{color:var(--blue)}
+.deck-btn.undo{color:var(--faint)}
+.deck-hint{text-align:center;margin-top:15px;font-size:12.5px;color:var(--faint);line-height:1.7}
+
 /* ---------- people ---------- */
 .people{display:flex;gap:15px;overflow-x:auto;padding:2px 2px 16px;scrollbar-width:none}
 .people::-webkit-scrollbar{display:none}
@@ -329,6 +373,7 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
     <nav class="tabs" id="tabs">
       <button class="tab" data-page="library" aria-current="page">书架</button>
       <button class="tab" data-page="search">搜索</button>
+      <button class="tab" data-page="deck">推荐</button>
       <button class="tab" data-page="stats">统计</button>
       <button class="tab" data-page="settings">设置</button>
     </nav>
@@ -379,6 +424,11 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
     <div id="tmBody"></div>
   </section>
 
+  <!-- ================= DECK ================= -->
+  <section class="page" id="page-deck">
+    <div id="deckBody"></div>
+  </section>
+
   <!-- ================= STATS ================= -->
   <section class="page" id="page-stats">
     <div id="statsBody"></div>
@@ -425,6 +475,38 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
           <option value="TW">中国台湾</option>
         </select>
         <p class="tiny faint" style="margin-top:7px">只影响「正在热映」和「即将上映」两个榜单排片。</p>
+      </div>
+
+      <div class="blk">
+        <div class="sec-title">推荐口味</div>
+        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
+          「推荐」页主要看你书架里的类型和年代分布。<br>
+          <span class="faint">下面两项是补充：人最可能看过的是自己 12–25 岁时上映的片子，母语则决定本土片的比重。留空就不参与。</span>
+        </p>
+        <div class="form-grid">
+          <div>
+            <label class="lb" for="setBirth">出生年份</label>
+            <input class="field" id="setBirth" type="number" min="1900" max="2020" placeholder="如 1995">
+          </div>
+          <div>
+            <label class="lb" for="setHomeLang">母语 / 出生地</label>
+            <select class="field" id="setHomeLang">
+              <option value="">不指定</option>
+              <option value="zh">中文</option>
+              <option value="en">英语</option>
+              <option value="it">意大利语</option>
+              <option value="ja">日语</option>
+              <option value="ko">韩语</option>
+              <option value="fr">法语</option>
+              <option value="es">西班牙语</option>
+              <option value="de">德语</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="margin-top:11px">
+          <button class="btn sm" id="resetSkipped">清空「没看过」记录</button>
+          <span id="skipMsg" class="tiny faint"></span>
+        </div>
       </div>
 
       <div class="blk">
@@ -522,10 +604,10 @@ const STATUS_ORDER = ["plan", "watching", "done", "onhold", "dropped"];
 
 /* ---------------- state ---------------- */
 
-let DB    = { version: VERSION, entries: [], deleted: {} };
+let DB    = { version: VERSION, entries: [], deleted: {}, skipped: {} };
 let PREFS = { lang: "zh-CN", theme: "dark", view: "grid", sort: "added",
               fType: "all", fStatus: "all", fGenre: "all", fDecade: "all",
-              browse: "trend_week", region: "" };
+              browse: "trend_week", region: "", birthYear: "", homeLang: "" };
 let KEY   = "";
 let GH    = { token: "", gist: "", auto: true, lastSync: 0 };
 let page  = "library";
@@ -569,6 +651,7 @@ function mins(n) {
 function normalizeAll() {
   DB.entries = DB.entries.filter(e => e && e.id).map(e => blankEntry(e));
   if (!DB.deleted || typeof DB.deleted !== "object") DB.deleted = {};
+  if (!DB.skipped || typeof DB.skipped !== "object") DB.skipped = {};
 }
 
 function load() {
@@ -1139,6 +1222,286 @@ function showSearch(q) {
 }
 
 /* ============================================================
+   SWIPE DECK
+   Candidates come mostly from what's already on the shelf; birth year and
+   home language are coarse extras the library simply cannot supply.
+   ============================================================ */
+
+let deck = { cards: [], i: 0, loading: false, history: [], seen: new Set() };
+let genreIds = null;   // Chinese genre name -> TMDb id
+
+async function loadGenreIds() {
+  if (genreIds) return genreIds;
+  const [m, t] = await Promise.all([
+    tmdb("/genre/movie/list"), tmdb("/genre/tv/list"),
+  ]);
+  genreIds = {};
+  for (const g of [...(m.genres || []), ...(t.genres || [])]) genreIds[g.name] = g.id;
+  return genreIds;
+}
+
+/** Weighted counts of what's on the shelf. Favourites and finished titles count more. */
+function tasteProfile() {
+  const g = {}, d = {};
+  for (const e of DB.entries) {
+    const w = (e.favorite ? 3 : 1) + (e.status === "done" ? 1 : 0);
+    for (const x of (e.genres || [])) g[x] = (g[x] || 0) + w;
+    const dec = decadeOf(e);
+    if (dec) d[dec] = (d[dec] || 0) + w;
+  }
+  const top = o => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k]) => k);
+  return { genres: top(g), decades: top(d) };
+}
+
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const randPage = n => 1 + Math.floor(Math.random() * n);
+
+/** Several independent probes, so the deck doesn't turn into one long genre. */
+async function candidateQueries() {
+  const ids = await loadGenreIds();
+  const t = tasteProfile();
+  const gid = t.genres.map(n => ids[n]).filter(Boolean);
+  const out = [];
+
+  if (gid.length) {
+    out.push({ why: `你常看${t.genres[0]}`, path: "/discover/movie", params: {
+      with_genres: gid.slice(0, 2).join("|"), "vote_count.gte": 300,
+      sort_by: "popularity.desc", page: randPage(5) } });
+    out.push({ why: `${t.genres[1] || t.genres[0]}高口碑`, path: "/discover/movie", params: {
+      with_genres: gid.slice(1, 4).join("|"), "vote_count.gte": 500,
+      sort_by: "vote_average.desc", page: randPage(3) } });
+    out.push({ why: `${t.genres[0]}剧集`, path: "/discover/tv", params: {
+      with_genres: gid.slice(0, 3).join("|"), "vote_count.gte": 150,
+      sort_by: "popularity.desc", page: randPage(3) } });
+  }
+
+  const dec = t.decades[0];
+  if (dec) {
+    out.push({ why: `${dec} 年代`, path: "/discover/movie", params: {
+      "primary_release_date.gte": `${dec}-01-01`,
+      "primary_release_date.lte": `${+dec + 9}-12-31`,
+      "vote_count.gte": 400, sort_by: "popularity.desc", page: randPage(4) } });
+  }
+
+  // The films someone is likeliest to have seen are the ones from when they were 12-25.
+  const by = parseInt(PREFS.birthYear, 10);
+  if (by > 1900 && by < 2020) {
+    out.push({ why: `你 12–25 岁时的片子`, path: "/discover/movie", params: {
+      "primary_release_date.gte": `${by + 12}-01-01`,
+      "primary_release_date.lte": `${by + 25}-12-31`,
+      "vote_count.gte": 300, sort_by: "popularity.desc", page: randPage(5) } });
+  }
+
+  if (PREFS.homeLang) {
+    out.push({ why: "你的母语电影", path: "/discover/movie", params: {
+      with_original_language: PREFS.homeLang, "vote_count.gte": 80,
+      sort_by: "vote_average.desc", page: randPage(4) } });
+    out.push({ why: "你的母语剧集", path: "/discover/tv", params: {
+      with_original_language: PREFS.homeLang, "vote_count.gte": 40,
+      sort_by: "popularity.desc", page: randPage(2) } });
+  }
+
+  // "Because you watched X" — the single most direct signal available.
+  const seeds = shuffle(DB.entries.filter(e => e.favorite || e.status === "done")).slice(0, 3);
+  for (const sd of seeds) {
+    out.push({ why: `因为你看过《${sd.title}》`, path: `/${sd.mediaType}/${sd.tmdbId}/recommendations`,
+               params: { page: 1 }, forced: sd.mediaType });
+  }
+  return shuffle(out);
+}
+
+async function loadDeck(more = false) {
+  if (deck.loading) return;
+  deck.loading = true;
+  if (!more) { deck.cards = []; deck.i = 0; deck.history = []; deck.seen = new Set(); }
+  renderDeck();
+
+  try {
+    const qs = (await candidateQueries()).slice(0, 6);
+    const pages = await Promise.all(qs.map(async q => {
+      try { return { q, d: await tmdb(q.path, q.params) }; }
+      catch { return null; }
+    }));
+
+    const fresh = [];
+    for (const pg of pages) {
+      if (!pg) continue;
+      for (const r of (pg.d.results || [])) {
+        const type = r.media_type || pg.q.forced || (r.title ? "movie" : "tv");
+        if (type !== "movie" && type !== "tv") continue;
+        if (r.adult) continue;
+        const c = fromTMDb({ ...r, media_type: type });
+        if (!c.poster) continue;                       // a card with no art is a bad card
+        if (find(c.id) || DB.skipped[c.id]) continue;  // already judged
+        if (deck.seen.has(c.id)) continue;
+        deck.seen.add(c.id);
+        fresh.push({ ...c, why: pg.q.why });
+      }
+    }
+    // interleave the sources so one probe can't dominate the top of the pile
+    const byWhy = {};
+    for (const c of fresh) (byWhy[c.why] ||= []).push(c);
+    const lanes = Object.values(byWhy).map(shuffle);
+    const woven = [];
+    for (let k = 0; lanes.some(l => l.length); k++) for (const l of lanes) if (l.length) woven.push(l.shift());
+
+    deck.cards = deck.cards.slice(0, deck.i).concat(woven);
+  } catch (err) {
+    console.warn("deck load failed", err);
+  } finally {
+    deck.loading = false;
+    renderDeck();
+  }
+}
+
+function deckCardHTML(c, top) {
+  const src = IMG(c.backdrop, "w780") || IMG(c.poster, "w500");
+  return `
+  <div class="sc${top ? " top" : ""}" data-card="${esc(c.id)}">
+    ${src ? `<img src="${src}" alt="" draggable="false">` : ""}
+    <div class="veil"></div>
+    ${c.why ? `<span class="why">${esc(c.why)}</span>` : ""}
+    <span class="stamp yes">看过</span>
+    <span class="stamp no">没看过</span>
+    <div class="meta">
+      <h3>${esc(c.title)}</h3>
+      <div class="sub">
+        <span>${c.year || "—"}</span>
+        <span>${c.mediaType === "movie" ? "电影" : "剧集"}</span>
+        ${c.tmdbScore ? `<span>TMDb ${c.tmdbScore.toFixed(1)}</span>` : ""}
+      </div>
+      ${c.overview ? `<div class="ov">${esc(c.overview)}</div>` : ""}
+    </div>
+  </div>`;
+}
+
+function renderDeck() {
+  const body = $("#deckBody");
+
+  if (!KEY) {
+    body.innerHTML = `<div class="empty"><div class="big">🔑</div>
+      <div class="tiny">先去「设置」填 TMDb key</div></div>`;
+    return;
+  }
+  if (!DB.entries.length) {
+    body.innerHTML = `<div class="empty"><div class="big">🎬</div>
+      <div style="font-size:15px;color:var(--dim);margin-bottom:6px">书架还是空的</div>
+      <div class="tiny">推荐是从你看过的东西里推出来的，先记几部再回来</div></div>`;
+    return;
+  }
+  if (deck.loading && deck.i >= deck.cards.length) {
+    body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; 正在挑片…</div>`;
+    return;
+  }
+  if (deck.i >= deck.cards.length) {
+    body.innerHTML = `<div class="empty">
+      <div class="big">🎞️</div>
+      <div style="font-size:15px;color:var(--dim);margin-bottom:10px">这一轮划完了</div>
+      <button class="btn primary" data-deckmore>再来一批</button>
+    </div>`;
+    return;
+  }
+
+  // only the next two are in the DOM; the rest stay as data
+  const stack = deck.cards.slice(deck.i, deck.i + 2).reverse();
+  body.innerHTML = `
+    <div class="deck-wrap">
+      <div class="deck-stage" id="deckStage">
+        ${stack.map((c, n) => deckCardHTML(c, n === stack.length - 1)).join("")}
+      </div>
+      <div class="deck-actions">
+        <button class="deck-btn no"   data-swipe="no"   title="没看过">✕</button>
+        <button class="deck-btn sm undo" data-swipe="undo" title="撤销上一张"${deck.history.length ? "" : " disabled"}>↶</button>
+        <button class="deck-btn sm want" data-swipe="want" title="想看">＋</button>
+        <button class="deck-btn yes"  data-swipe="yes"  title="看过">✓</button>
+      </div>
+      <div class="deck-hint">
+        左划 = 没看过 · 右划 = 看过 · ＋ 加入想看<br>
+        还剩 ${deck.cards.length - deck.i} 张
+      </div>
+    </div>`;
+  bindTopCard();
+}
+
+/** Commit the top card. `dir` is one of yes / no / want. */
+function deckAct(dir) {
+  const c = deck.cards[deck.i];
+  if (!c) return;
+
+  if (dir === "yes" || dir === "want") {
+    const e = blankEntry({ ...c });
+    delete e.why;
+    e.status = dir === "yes" ? "done" : "plan";
+    DB.entries.push(e);
+    deck.history.push({ id: c.id, action: dir });
+  } else {
+    DB.skipped[c.id] = Date.now();
+    deck.history.push({ id: c.id, action: "no" });
+  }
+  deck.i++;
+  save();
+  if (deck.cards.length - deck.i <= 3) loadDeck(true);   // top up before running dry
+  renderDeck();
+}
+
+function deckUndo() {
+  const last = deck.history.pop();
+  if (!last) return;
+  if (last.action === "no") delete DB.skipped[last.id];
+  else {
+    const k = DB.entries.findIndex(e => e.id === last.id);
+    if (k >= 0) DB.entries.splice(k, 1);
+  }
+  deck.i = Math.max(0, deck.i - 1);
+  save();
+  renderDeck();
+}
+
+/** Pointer-drag on the top card, with the buttons as the accessible path. */
+function bindTopCard() {
+  const card = $("#deckStage .sc.top");
+  if (!card) return;
+  const yes = $(".stamp.yes", card), no = $(".stamp.no", card);
+  let id = null, x0 = 0, y0 = 0, dx = 0, dy = 0, dragging = false;
+
+  card.addEventListener("pointerdown", ev => {
+    if (ev.button) return;
+    id = ev.pointerId; x0 = ev.clientX; y0 = ev.clientY; dragging = true;
+    card.setPointerCapture(id);
+    card.classList.remove("glide");
+  });
+
+  card.addEventListener("pointermove", ev => {
+    if (!dragging || ev.pointerId !== id) return;
+    dx = ev.clientX - x0; dy = ev.clientY - y0;
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    card.style.transform = `translate(${dx}px, ${dy * 0.28}px) rotate(${dx / 22}deg)`;
+    yes.style.opacity = Math.max(0, Math.min(1, dx / 90));
+    no.style.opacity  = Math.max(0, Math.min(1, -dx / 90));
+  });
+
+  const release = ev => {
+    if (!dragging || (ev.pointerId !== undefined && ev.pointerId !== id)) return;
+    dragging = false;
+    try { card.releasePointerCapture(id); } catch (e) {}
+    const hit = Math.abs(dx) > 92;
+    card.classList.add("glide");
+    if (hit) {
+      const dir = dx > 0 ? "yes" : "no";
+      card.style.transform = `translate(${dx > 0 ? 700 : -700}px, ${dy}px) rotate(${dx / 12}deg)`;
+      card.style.opacity = "0";
+      setTimeout(() => deckAct(dir), 170);
+    } else {
+      card.style.transform = "";
+      yes.style.opacity = no.style.opacity = 0;
+    }
+    dx = dy = 0;
+  };
+  card.addEventListener("pointerup", release);
+  card.addEventListener("pointercancel", release);
+}
+
+/* ============================================================
    DETAIL SHEET
    ============================================================ */
 
@@ -1511,6 +1874,9 @@ function exportJSON() {
 function mergeRemote(remote) {
   let added = 0, updated = 0, removed = 0;
 
+  for (const [id, ts] of Object.entries((remote && remote.skipped) || {})) {
+    if (!DB.skipped[id] || DB.skipped[id] < ts) DB.skipped[id] = ts;
+  }
   const rDel = (remote && remote.deleted) || {};
   for (const [id, ts] of Object.entries(rDel)) {
     if (!DB.deleted[id] || DB.deleted[id] < ts) DB.deleted[id] = ts;
@@ -1563,6 +1929,7 @@ function payloadString() {
     version: VERSION,
     entries: DB.entries,
     deleted: DB.deleted,
+    skipped: DB.skipped,
     savedAt: new Date().toISOString(),
   }, null, 1);
 }
@@ -1703,6 +2070,7 @@ function go(p) {
   $$("#tabs .tab").forEach(t =>
     t.setAttribute("aria-current", t.dataset.page === p ? "page" : "false"));
   if (p === "stats") renderStats();
+  if (p === "deck") { deck.cards.length ? renderDeck() : loadDeck(); }
   if (p === "library") renderLibrary();
   if (p === "search") {
     if (!$("#tmBody").innerHTML.trim()) {
@@ -1763,6 +2131,14 @@ function wire() {
     const c = ev.target.closest("[data-open]");
     if (c) openSheet(c.dataset.open);
   });
+  $("#deckBody").addEventListener("click", ev => {
+    if (ev.target.closest("[data-deckmore]")) { loadDeck(); return; }
+    const b = ev.target.closest("[data-swipe]");
+    if (!b) return;
+    const d = b.dataset.swipe;
+    d === "undo" ? deckUndo() : deckAct(d);
+  });
+
   $("#statsBody").addEventListener("click", ev => {
     const c = ev.target.closest("[data-open]");
     if (c) openSheet(c.dataset.open);
@@ -2003,6 +2379,22 @@ function wire() {
     toast(`已校正 ${hits.length} 部剧集`);
   });
 
+  $("#setBirth").addEventListener("change", ev => {
+    PREFS.birthYear = ev.target.value.trim(); savePrefs();
+    deck.cards = []; toast(PREFS.birthYear ? "已记录，推荐会参考你的成长年代" : "已取消");
+  });
+  $("#setHomeLang").addEventListener("change", ev => {
+    PREFS.homeLang = ev.target.value; savePrefs();
+    deck.cards = []; toast(ev.target.value ? "已记录母语偏好" : "已取消");
+  });
+  $("#resetSkipped").addEventListener("click", () => {
+    const n = Object.keys(DB.skipped).length;
+    if (!n) { $("#skipMsg").textContent = "本来就是空的"; return; }
+    if (!confirm(`清空 ${n} 条「没看过」记录？它们会重新出现在推荐里。`)) return;
+    DB.skipped = {}; save(); deck.cards = [];
+    $("#skipMsg").textContent = `已清空 ${n} 条`;
+  });
+
   $("#expBtn").addEventListener("click", exportJSON);
   $("#impBtn").addEventListener("click", () => $("#impFile").click());
   $("#impFile").addEventListener("change", ev => {
@@ -2105,6 +2497,8 @@ function init() {
   $("#ghGist").value  = GH.gist;
   $("#ghAuto").checked = GH.auto !== false;
   $("#setRegion").value = PREFS.region || "";
+  $("#setBirth").value = PREFS.birthYear || "";
+  $("#setHomeLang").value = PREFS.homeLang || "";
   feed.key = PREFS.browse || "trend_week";
   $("#verLine").textContent = `本地共 ${DB.entries.length} 条记录 · 数据格式 v${VERSION}`;
   setView(PREFS.view);
