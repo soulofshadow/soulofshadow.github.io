@@ -188,6 +188,24 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .y{font-size:12px;color:var(--faint);margin-top:2px;font-variant-numeric:tabular-nums}
 
+/* ---------- people ---------- */
+.people{display:flex;gap:15px;overflow-x:auto;padding:2px 2px 16px;scrollbar-width:none}
+.people::-webkit-scrollbar{display:none}
+.person{flex:none;width:80px;text-align:center;transition:transform .16s}
+.person:hover{transform:translateY(-3px)}
+.person .av{
+  width:66px;height:66px;border-radius:50%;object-fit:cover;display:block;
+  margin:0 auto 8px;background:var(--panel2);border:1px solid var(--line);
+}
+.person .ph2{display:grid;place-items:center;font-size:24px;color:var(--faint)}
+.person .n{font-size:12.5px;line-height:1.3;font-weight:530;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.person .r{font-size:11px;color:var(--faint);margin-top:2px}
+.person-head{display:flex;gap:13px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.person-head .av{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;
+  background:var(--panel2);border:1px solid var(--line)}
+.person-head .nm{font-size:17px;font-weight:620}
+
 /* ---------- list view ---------- */
 .list{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .li{display:flex;gap:13px;padding:11px 14px;background:var(--bg);align-items:center;text-align:left;width:100%;transition:background .12s}
@@ -350,7 +368,7 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
   <!-- ================= SEARCH ================= -->
   <section class="page" id="page-search">
     <div class="toolbar">
-      <input class="field grow" id="tmQ" type="search" placeholder="搜电影 / 剧集…  例：沙丘、Breaking Bad、千与千寻" autocomplete="off">
+      <input class="field grow" id="tmQ" type="search" placeholder="搜电影 / 剧集 / 演员…  例：沙丘、梁朝伟、Breaking Bad" autocomplete="off">
       <select class="field" id="tmLang" style="width:auto;flex:none">
         <option value="zh-CN">中文</option>
         <option value="en-US">English</option>
@@ -930,7 +948,8 @@ const BROWSE = [
 ];
 
 let searchSeq = 0;
-let feed = { mode: "browse", key: "trend_week", q: "", page: 1, totalPages: 1, hits: [], loading: false };
+let feed = { mode: "browse", key: "trend_week", q: "", page: 1, totalPages: 1,
+             hits: [], people: [], person: null, loading: false };
 
 function resultCard(h) {
   const owned = !!find(h.id);
@@ -949,6 +968,19 @@ function resultCard(h) {
   </button>`;
 }
 
+function personCard(p) {
+  const src = IMG(p.profile_path, "w185");
+  const known = (p.known_for || [])
+    .map(k => k.title || k.name).filter(Boolean).slice(0, 2).join(" · ");
+  return `
+  <button class="person" data-person="${p.id}" title="${esc(p.name)}">
+    ${src ? `<img class="av" src="${src}" alt="" loading="lazy">`
+          : `<div class="av ph2">🎭</div>`}
+    <div class="n">${esc(p.name)}</div>
+    ${known ? `<div class="r">${esc(known)}</div>` : ""}
+  </button>`;
+}
+
 function renderBrowseBar() {
   const active = feed.mode === "browse" ? feed.key : null;
   $("#browseBar").innerHTML = BROWSE.map(b =>
@@ -959,13 +991,30 @@ function renderFeed() {
   const body = $("#tmBody");
   renderBrowseBar();
 
+  const people = (feed.mode === "search" && feed.people.length)
+    ? `<div class="sec-title" style="margin-bottom:9px">演职人员</div>
+       <div class="people">${feed.people.map(personCard).join("")}</div>` : "";
+
+  const head = (feed.mode === "person" && feed.person)
+    ? `<div class="person-head">
+         ${IMG(feed.person.photo, "w185")
+            ? `<img class="av" src="${IMG(feed.person.photo, "w185")}" alt="">`
+            : `<div class="av"></div>`}
+         <div style="flex:1;min-width:0">
+           <div class="nm">${esc(feed.person.name)}</div>
+           <div class="tiny faint">${feed.hits.length} 部参演作品</div>
+         </div>
+         <button class="btn sm" data-backsearch>← 返回搜索</button>
+       </div>` : "";
+
   if (!feed.hits.length) {
-    body.innerHTML = feed.mode === "search"
-      ? `<div class="empty"><div class="big">🤷</div><div class="tiny">没找到「${esc(feed.q)}」</div></div>`
-      : `<div class="empty"><div class="big">📭</div><div class="tiny">这个榜单暂时没有内容</div></div>`;
+    body.innerHTML = head + people + (feed.mode === "search"
+      ? `<div class="empty"><div class="big">🤷</div><div class="tiny">没有片名匹配「${esc(feed.q)}」${
+           feed.people.length ? "，试试上面的演职人员" : ""}</div></div>`
+      : `<div class="empty"><div class="big">📭</div><div class="tiny">这个榜单暂时没有内容</div></div>`);
     return;
   }
-  body.innerHTML =
+  body.innerHTML = head + people +
     `<div class="grid">${feed.hits.map(resultCard).join("")}</div>` +
     (feed.page < feed.totalPages
       ? `<div style="text-align:center;margin-top:26px">
@@ -993,6 +1042,7 @@ async function loadFeed(reset = false) {
   const seq = ++searchSeq;
   if (reset) {
     feed.page = 1; feed.hits = []; feed.totalPages = 1;
+    if (feed.mode !== "search") feed.people = [];
     renderBrowseBar();
     body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; 加载中…</div>`;
   } else {
@@ -1002,8 +1052,38 @@ async function loadFeed(reset = false) {
 
   try {
     let d, forced = null;
-    if (feed.mode === "search") {
+    if (feed.mode === "person") {
+      // combined_credits returns a whole filmography at once — no paging
+      const c = await tmdb(`/person/${feed.person.id}/combined_credits`);
+      // Talk / news / reality credits are "appeared as themselves" noise and, being
+      // long-running, out-popularity the actual work.
+      const CHATTER = [10767, 10763, 10764];
+      const isChatter = r => (r.genre_ids || []).some(g => CHATTER.includes(g));
+      const seenC = new Set();
+      const rows = [];
+      for (const r of (c.cast || [])) {
+        const k = `${r.media_type}-${r.id}`;
+        if (r.adult || isChatter(r) || seenC.has(k)) continue;
+        seenC.add(k); rows.push(r);
+      }
+      // a director/writer's own films belong here too; their music credits don't
+      for (const r of (c.crew || [])) {
+        const k = `${r.media_type}-${r.id}`;
+        if (r.adult || seenC.has(k)) continue;
+        if (isChatter(r)) continue;
+        if (r.department !== "Directing" && r.department !== "Writing") continue;
+        seenC.add(k); rows.push(r);
+      }
+      rows.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+      d = { results: rows, total_pages: 1 };
+    } else if (feed.mode === "search") {
       d = await tmdb("/search/multi", { query: feed.q, include_adult: "false", page: feed.page });
+      // TMDb returns a long tail of empty namesakes — keep the ones with a face or a credit
+      feed.people = feed.page === 1
+        ? (d.results || [])
+            .filter(r => r.media_type === "person" && (r.profile_path || (r.known_for || []).length))
+            .slice(0, 10)
+        : feed.people;
     } else {
       const cat = BROWSE.find(b => b.key === feed.key) || BROWSE[0];
       forced = cat.type || null;
@@ -1035,8 +1115,16 @@ async function loadFeed(reset = false) {
   }
 }
 
+function showPerson(p) {
+  feed.mode = "person";
+  feed.person = p;
+  loadFeed(true);
+  window.scrollTo(0, 0);
+}
+
 function showBrowse(key) {
   feed.mode = "browse";
+  feed.person = null;
   feed.key  = key || feed.key;
   PREFS.browse = feed.key; savePrefs();
   $("#tmQ").value = "";
@@ -1045,6 +1133,7 @@ function showBrowse(key) {
 
 function showSearch(q) {
   feed.mode = "search";
+  feed.person = null;
   feed.q = q;
   loadFeed(true);
 }
@@ -1698,6 +1787,17 @@ function wire() {
 
   $("#tmBody").addEventListener("click", ev => {
     if (ev.target.closest("#moreBtn")) { feed.page++; loadFeed(); return; }
+
+    const pc = ev.target.closest("[data-person]");
+    if (pc) {
+      const p = feed.people.find(x => String(x.id) === pc.dataset.person);
+      if (p) showPerson({ id: p.id, name: p.name, photo: p.profile_path });
+      return;
+    }
+    if (ev.target.closest("[data-backsearch]")) {
+      feed.q ? showSearch(feed.q) : showBrowse();
+      return;
+    }
     const c = ev.target.closest("[data-add]");
     if (!c) return;
     const hits = $("#tmBody")._hits || [];
