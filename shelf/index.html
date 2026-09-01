@@ -131,6 +131,13 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 .seg button[aria-pressed="true"]{background:var(--panel3);color:var(--fg)}
 .filterbar{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;scrollbar-width:none}
 .filterbar::-webkit-scrollbar{display:none}
+.filterbar select{
+  flex:none;width:auto;padding:6px 30px 6px 13px;border-radius:999px;
+  font-size:13.5px;background-color:var(--panel);border:1px solid var(--line);
+  color:var(--dim);cursor:pointer;
+}
+.filterbar select:hover{border-color:var(--line2);color:var(--fg)}
+.filterbar select.on{background-color:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
 
 /* ---------- poster grid ---------- */
 .grid{
@@ -323,6 +330,7 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
 
     <div class="filterbar" id="fType"></div>
     <div class="filterbar" id="fStatus"></div>
+    <div class="filterbar" id="fMore"></div>
 
     <div id="libCount" class="tiny faint" style="margin-bottom:13px"></div>
     <div id="libBody"></div>
@@ -487,7 +495,8 @@ const STATUS_ORDER = ["plan", "watching", "done", "onhold", "dropped"];
 
 let DB    = { version: VERSION, entries: [], deleted: {} };
 let PREFS = { lang: "zh-CN", theme: "dark", view: "grid", sort: "added",
-              fType: "all", fStatus: "all", browse: "trend_week", region: "" };
+              fType: "all", fStatus: "all", fGenre: "all", fDecade: "all", fScore: "all",
+              browse: "trend_week", region: "" };
 let KEY   = "";
 let GH    = { token: "", gist: "", auto: true, lastSync: 0 };
 let page  = "library";
@@ -767,15 +776,21 @@ function listRow(e) {
   </button>`;
 }
 
-function visibleEntries() {
-  const q = $("#libQ").value.trim().toLowerCase();
-  let list = DB.entries.slice();
+const decadeOf = e => (e.year && /^\d{4}$/.test(e.year))
+  ? String(Math.floor(+e.year / 10) * 10) : "";
 
-  if (PREFS.fType !== "all") {
+/** All active filters except `skip`, so a facet can count without counting itself. */
+function applyFilters(list, skip = "") {
+  const q = $("#libQ").value.trim().toLowerCase();
+
+  if (skip !== "type" && PREFS.fType !== "all") {
     if (PREFS.fType === "fav") list = list.filter(e => e.favorite);
     else list = list.filter(e => e.mediaType === PREFS.fType);
   }
-  if (PREFS.fStatus !== "all") list = list.filter(e => e.status === PREFS.fStatus);
+  if (skip !== "status" && PREFS.fStatus !== "all") list = list.filter(e => e.status === PREFS.fStatus);
+  if (skip !== "genre"  && PREFS.fGenre !== "all")  list = list.filter(e => (e.genres || []).includes(PREFS.fGenre));
+  if (skip !== "decade" && PREFS.fDecade !== "all") list = list.filter(e => decadeOf(e) === PREFS.fDecade);
+  if (skip !== "score"  && PREFS.fScore !== "all")  list = list.filter(e => (e.tmdbScore || 0) >= +PREFS.fScore);
 
   if (q) {
     list = list.filter(e =>
@@ -784,7 +799,16 @@ function visibleEntries() {
       (e.notes || "").toLowerCase().includes(q) ||
       (e.genres || []).some(g => g.toLowerCase().includes(q)));
   }
+  return list;
+}
 
+function anyFilterActive() {
+  return PREFS.fType !== "all" || PREFS.fStatus !== "all" || PREFS.fGenre !== "all"
+      || PREFS.fDecade !== "all" || PREFS.fScore !== "all" || !!$("#libQ").value.trim();
+}
+
+function visibleEntries() {
+  let list = applyFilters(DB.entries.slice());
   const s = PREFS.sort;
   list.sort((a, b) => {
     switch (s) {
@@ -806,12 +830,54 @@ function renderFilters() {
   $("#fType").innerHTML = types.map(([v, l]) =>
     `<button class="chip" data-ftype="${v}" aria-pressed="${PREFS.fType === v}">${l}</button>`).join("");
 
+  // Facet counts reflect every *other* active filter, so "看完 443" can't keep
+  // claiming 443 while the genre filter has cut the list to 196.
+  const forStatus = applyFilters(DB.entries.slice(), "status");
   const counts = {};
-  for (const e of DB.entries) counts[e.status] = (counts[e.status] || 0) + 1;
-  const stat = [["all", "所有状态", DB.entries.length]]
+  for (const e of forStatus) counts[e.status] = (counts[e.status] || 0) + 1;
+  const stat = [["all", "所有状态", forStatus.length]]
     .concat(STATUS_ORDER.map(k => [k, STATUS[k].label, counts[k] || 0]));
   $("#fStatus").innerHTML = stat.map(([v, l, c]) =>
     `<button class="chip" data-fstatus="${v}" aria-pressed="${PREFS.fStatus === v}">${l}${c ? ` <span class="faint">${c}</span>` : ""}</button>`).join("");
+
+  renderMoreFilters();
+}
+
+/** Genre / decade / score. Options come from what's actually in the library,
+ *  so you can never pick something that yields nothing. */
+function renderMoreFilters() {
+  const opt = (v, label, sel) =>
+    `<option value="${esc(v)}"${sel === v ? " selected" : ""}>${esc(label)}</option>`;
+
+  const gPool = applyFilters(DB.entries.slice(), "genre");
+  const gCount = {};
+  for (const e of gPool) for (const g of (e.genres || [])) gCount[g] = (gCount[g] || 0) + 1;
+  const genres = Object.entries(gCount).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh"));
+
+  const dPool = applyFilters(DB.entries.slice(), "decade");
+  const dCount = {};
+  for (const e of dPool) { const d = decadeOf(e); if (d) dCount[d] = (dCount[d] || 0) + 1; }
+  const decades = Object.keys(dCount).sort((a, b) => b - a);
+
+  const sPool = applyFilters(DB.entries.slice(), "score");
+  const scores = [9, 8, 7, 6, 5]
+    .map(n => [n, sPool.filter(e => (e.tmdbScore || 0) >= n).length])
+    .filter(([, c]) => c > 0);
+
+  $("#fMore").innerHTML =
+    `<select id="selGenre" class="${PREFS.fGenre !== "all" ? "on" : ""}" aria-label="类型">
+       ${opt("all", "所有类型", PREFS.fGenre)}
+       ${genres.map(([g, c]) => opt(g, `${g} · ${c}`, PREFS.fGenre)).join("")}
+     </select>
+     <select id="selDecade" class="${PREFS.fDecade !== "all" ? "on" : ""}" aria-label="年代">
+       ${opt("all", "所有年代", PREFS.fDecade)}
+       ${decades.map(d => opt(d, `${d} 年代 · ${dCount[d]}`, PREFS.fDecade)).join("")}
+     </select>
+     <select id="selScore" class="${PREFS.fScore !== "all" ? "on" : ""}" aria-label="评分">
+       ${opt("all", "所有评分", PREFS.fScore)}
+       ${scores.map(([n, c]) => opt(String(n), `TMDb ${n} 分以上 · ${c}`, PREFS.fScore)).join("")}
+     </select>
+    `;
 }
 
 function renderLibrary() {
@@ -819,8 +885,11 @@ function renderLibrary() {
   const list = visibleEntries();
   const body = $("#libBody");
 
-  $("#libCount").textContent = DB.entries.length
+  $("#libCount").innerHTML = DB.entries.length
     ? `显示 ${list.length} / ${DB.entries.length} 条`
+      + (anyFilterActive()
+          ? ` · <button id="clearFilters" style="color:var(--accent);font-size:inherit">✕ 清除筛选</button>`
+          : "")
     : "";
 
   if (!DB.entries.length) {
@@ -1587,6 +1656,18 @@ function wire() {
   $("#fStatus").addEventListener("click", ev => {
     const c = ev.target.closest("[data-fstatus]");
     if (c) { PREFS.fStatus = c.dataset.fstatus; savePrefs(); renderLibrary(); }
+  });
+  $("#fMore").addEventListener("change", ev => {
+    const map = { selGenre: "fGenre", selDecade: "fDecade", selScore: "fScore" };
+    const key = map[ev.target.id];
+    if (!key) return;
+    PREFS[key] = ev.target.value; savePrefs(); renderLibrary();
+  });
+  $("#libCount").addEventListener("click", ev => {
+    if (!ev.target.closest("#clearFilters")) return;
+    Object.assign(PREFS, { fType: "all", fStatus: "all", fGenre: "all", fDecade: "all", fScore: "all" });
+    $("#libQ").value = "";
+    savePrefs(); renderLibrary();
   });
   $("#libBody").addEventListener("click", ev => {
     const c = ev.target.closest("[data-open]");
