@@ -411,6 +411,16 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
       </div>
 
       <div class="blk">
+        <div class="sec-title">数据校正</div>
+        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
+          找出标着「看完」但正季其实没看全的剧集，改成「在看」。<br>
+          <span class="faint">特别篇不计入判断；完成日期会保留不动。</span>
+        </p>
+        <button class="btn" id="fixStatus">检查并校正</button>
+        <div id="fixMsg" class="tiny" style="margin-top:9px;line-height:1.7"></div>
+      </div>
+
+      <div class="blk">
         <div class="sec-title">危险区域</div>
         <button class="btn danger" id="wipeBtn">清空整个书架</button>
       </div>
@@ -959,6 +969,25 @@ function showSearch(q) {
    ============================================================ */
 
 let openId = null;
+let draft  = null;   // previewed from search/charts, deliberately NOT in the library yet
+
+/** The entry the sheet is showing — a library entry, or an uncommitted preview. */
+function current() {
+  return find(openId) || (draft && draft.id === openId ? draft : null);
+}
+function isDraft() {
+  return !!draft && draft.id === openId && !find(openId);
+}
+/** Any edit inside a preview sheet is what actually adds it to the library. */
+function commitDraft() {
+  if (!isDraft()) return false;
+  DB.entries.push(draft);
+  const t = draft.title;
+  draft = null;
+  save();
+  toast(`已加入书架 · ${t}`);
+  return true;
+}
 
 /** Regular seasons only — S0 specials never count toward "看完". */
 function regularSeasons(e) {
@@ -1031,9 +1060,15 @@ function sheetHTML(e) {
 
     <div class="blk">
       <div class="sec-title">我的记录</div>
+      ${isDraft() ? `<div class="tiny" style="margin:-4px 0 13px;padding:9px 13px;border-radius:10px;
+        background:var(--accent-soft);border:1px solid var(--accent);color:var(--dim)">
+        还没加入书架 —— 选一个状态（或收藏、勾选剧集）即可加入
+      </div>` : ""}
       <div class="row" style="margin-bottom:16px">
         ${STATUS_ORDER.map(k =>
-          `<button class="chip" data-status="${k}" aria-pressed="${e.status === k}">${STATUS[k].label}</button>`).join("")}
+          // nothing is pre-selected while previewing — the default "plan" would read
+          // as a choice the user never made
+          `<button class="chip" data-status="${k}" aria-pressed="${!isDraft() && e.status === k}">${STATUS[k].label}</button>`).join("")}
         <button class="chip" data-fav aria-pressed="${e.favorite}">${e.favorite ? "★ 已收藏" : "☆ 收藏"}</button>
       </div>
 
@@ -1069,18 +1104,19 @@ function sheetHTML(e) {
                allRegularWatched(e) ? "取消所有正季" : "所有正季标记已看"}</button>`
           : ""}
       </div>
-      <button class="btn sm danger" data-del>从书架移除</button>
+      ${isDraft() ? "" : `<button class="btn sm danger" data-del>从书架移除</button>`}
     </div>
-    <div class="tiny faint" style="margin-top:14px">
+    ${isDraft() ? "" : `<div class="tiny faint" style="margin-top:14px">
       添加于 ${ymd(e.addedAt)} · 更新于 ${ymd(e.updatedAt)}
-    </div>
+    </div>`}
   </div>`;
 }
 
-async function openSheet(id) {
-  const e = find(id);
-  if (!e) return;
+async function openSheet(id, previewEntry = null) {
+  draft = previewEntry;
   openId = id;
+  const e = current();
+  if (!e) { openId = null; return; }
   $("#sheet").innerHTML = sheetHTML(e);
   $("#scrim").classList.add("on");
   $("#scrim").scrollTop = 0;
@@ -1090,21 +1126,23 @@ async function openSheet(id) {
   if (!e.detailLoaded && KEY) {
     try {
       await ensureDetail(e);
-      if (openId === id) { $("#sheet").innerHTML = sheetHTML(e); renderLibrary(); }
+      if (openId === id) { $("#sheet").innerHTML = sheetHTML(current() || e); renderLibrary(); }
     } catch (err) { console.warn("detail fetch failed", err); }
   }
 }
 
 function closeSheet() {
   openId = null;
+  draft = null;
   $("#scrim").classList.remove("on");
   $("#sheet").innerHTML = "";
   document.body.style.overflow = "";
   renderLibrary();
+  if (page === "search" && feed.hits.length) renderFeed();   // refresh 已在书架 badges
 }
 
 function refreshSheet() {
-  const e = find(openId);
+  const e = current();
   if (e) $("#sheet").innerHTML = sheetHTML(e);
 }
 
@@ -1570,11 +1608,7 @@ function wire() {
     if (!hit) return;
     const existing = find(hit.id);
     if (existing) { openSheet(existing.id); return; }
-    const e = addEntry(hit);
-    const badge = c.querySelector(".badge");
-    if (badge) { badge.className = "badge s-done"; badge.textContent = "已在书架"; }
-    renderLibrary();
-    openSheet(e.id);
+    openSheet(hit.id, blankEntry(hit));   // preview only — committed on first edit
   });
 
   /* --- detail sheet --- */
@@ -1583,10 +1617,15 @@ function wire() {
   });
 
   $("#sheet").addEventListener("click", async ev => {
-    const e = find(openId);
+    let e = current();
     if (!e) return;
 
     if (ev.target.closest("[data-close]")) { closeSheet(); return; }
+
+    // Opening a search result only previews it; acting on it is what adds it.
+    if (ev.target.closest("[data-status],[data-fav],[data-markall],[data-allseason],[data-noneseason]")) {
+      if (commitDraft()) e = current();
+    }
 
     const st = ev.target.closest("[data-status]");
     if (st) {
@@ -1657,8 +1696,9 @@ function wire() {
 
   // episode checkboxes
   $("#sheet").addEventListener("change", ev => {
-    const e = find(openId);
+    let e = current();
     if (!e) return;
+    if (commitDraft()) e = current();
 
     if (ev.target.matches('.ep input[type="checkbox"]')) {
       const lab = ev.target.closest(".ep");
@@ -1682,15 +1722,17 @@ function wire() {
   });
 
   $("#sheet").addEventListener("input", ev => {
-    const e = find(openId);
-    if (e && ev.target.id === "dNotes") { e.notes = ev.target.value; touch(e); }
+    if (ev.target.id !== "dNotes") return;
+    commitDraft();
+    const e = current();
+    if (e) { e.notes = ev.target.value; touch(e); }
   });
 
   // lazily load a season's episodes when it is first expanded
   $("#sheet").addEventListener("toggle", ev => {
     const det = ev.target;
     if (!det.matches("details.season") || !det.open) return;
-    const e = find(openId);
+    const e = current();
     const host = $("[data-eps]", det);
     if (!e || !host || host.dataset.loaded) return;
     host.dataset.loaded = "1";
@@ -1735,6 +1777,33 @@ function wire() {
     $("#tmLang").value = PREFS.lang;
     seasonCache.clear();
     toast("语言已切换，重新打开条目并「刷新元数据」即可更新已有标题");
+  });
+
+  /** "看完" should mean every regular season is done. Imported data (and shows that
+   *  gained seasons since) can drift out of that. */
+  function staleDone() {
+    return DB.entries.filter(e => {
+      if (e.mediaType !== "tv" || e.status !== "done") return false;
+      const t = totalEps(e);
+      return t > 0 && watchedEps(e) < t;
+    });
+  }
+
+  $("#fixStatus").addEventListener("click", () => {
+    const hits = staleDone();
+    const m = $("#fixMsg");
+    if (!hits.length) {
+      m.textContent = "✓ 没有需要校正的条目"; m.style.color = "var(--green)";
+      return;
+    }
+    const list = hits.slice(0, 8)
+      .map(e => `${e.title}（${watchedEps(e)}/${totalEps(e)} 集）`).join("、");
+    if (!confirm(`有 ${hits.length} 部剧集标着「看完」但正季没看完，改成「在看」？\n\n`
+                 + list + (hits.length > 8 ? ` …等 ${hits.length} 部` : ""))) return;
+    for (const e of hits) { e.status = "watching"; e.updatedAt = Date.now(); }
+    save(); renderLibrary();
+    m.innerHTML = `✓ 已把 ${hits.length} 部改成「在看」`; m.style.color = "var(--green)";
+    toast(`已校正 ${hits.length} 部剧集`);
   });
 
   $("#expBtn").addEventListener("click", exportJSON);
