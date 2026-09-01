@@ -960,6 +960,16 @@ function showSearch(q) {
 
 let openId = null;
 
+/** Regular seasons only — S0 specials never count toward "看完". */
+function regularSeasons(e) {
+  return (e.seasonsMeta || []).filter(s => s.n > 0 && s.count > 0);
+}
+
+function allRegularWatched(e) {
+  const reg = regularSeasons(e);
+  return reg.length > 0 && reg.every(s => (e.progress[s.n] || []).length >= s.count);
+}
+
 function seasonsBlock(e) {
   if (e.mediaType !== "tv" || !e.seasonsMeta || !e.seasonsMeta.length) return "";
   const t = totalEps(e), w = watchedEps(e);
@@ -1054,6 +1064,10 @@ function sheetHTML(e) {
       <div class="row">
         <button class="btn sm" data-refresh>刷新元数据</button>
         <a class="btn sm" href="https://www.themoviedb.org/${e.mediaType}/${e.tmdbId}" target="_blank" rel="noopener" style="color:inherit">TMDb 页面 ↗</a>
+        ${regularSeasons(e).length
+          ? `<button class="btn sm" data-markall="${allRegularWatched(e) ? "0" : "1"}">${
+               allRegularWatched(e) ? "取消所有正季" : "所有正季标记已看"}</button>`
+          : ""}
       </div>
       <button class="btn sm danger" data-del>从书架移除</button>
     </div>
@@ -1606,6 +1620,24 @@ function wire() {
       removeEntry(e.id);
       closeSheet();
       toast("已移除");
+      return;
+    }
+
+    const ma = ev.target.closest("[data-markall]");
+    if (ma) {
+      const on = ma.dataset.markall === "1";
+      const open = [...$$("details.season", $("#sheet"))].filter(d => d.open).map(d => d.dataset.season);
+      for (const s of regularSeasons(e)) setSeasonAll(e, s.n, on);
+      // Undo the status/date that marking just set — but only if the finish date is
+      // today's, so a real date typed in earlier is never thrown away.
+      if (!on && !watchedEps(e) && e.status === "done" && e.finishedAt === ymd(Date.now())) {
+        e.status = "plan";
+        e.finishedAt = "";
+        touch(e);
+      }
+      refreshSheet(); reopenSeasons(e, open);
+      const n = regularSeasons(e).reduce((a, s) => a + s.count, 0);
+      toast(on ? `已标记 ${regularSeasons(e).length} 季 · ${n} 集` : "已取消所有正季");
       return;
     }
 
