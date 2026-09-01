@@ -211,6 +211,19 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 .genres{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
 .genres span{padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-size:12.5px;color:var(--dim)}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}
+/* Grid children default to min-width:auto, so an input that refuses to shrink below
+   its intrinsic width drags the whole column past the viewport. */
+.form-grid > *{min-width:0}
+/* iOS Safari gives date inputs a wide intrinsic width from the localised format
+   ("2023年12月25日"), centres the value and adds margins around it. Left unchecked
+   that overflows the sheet on a phone. */
+input[type="date"]{
+  -webkit-appearance:none;appearance:none;
+  min-width:0;max-width:100%;width:100%;
+  min-height:38px;
+}
+input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0;min-width:0}
+input[type="date"]::-webkit-datetime-edit{padding:0}
 label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;font-weight:500}
 /* ---------- seasons ---------- */
 .season{border:1px solid var(--line);border-radius:11px;margin-bottom:9px;overflow:hidden;background:var(--panel)}
@@ -267,6 +280,8 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
   .head .p{width:88px}
   .head h2{font-size:19px}
   .stat .n{font-size:24px}
+  /* one field per row on a phone — no reflow surprises from intrinsic widths */
+  .form-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
