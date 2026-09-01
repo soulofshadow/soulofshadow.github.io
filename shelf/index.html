@@ -236,16 +236,23 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 /* ---------- people ---------- */
 .people{display:flex;gap:15px;overflow-x:auto;padding:2px 2px 16px;scrollbar-width:none}
 .people::-webkit-scrollbar{display:none}
-.person{flex:none;width:80px;text-align:center;transition:transform .16s}
+/* A <button> vertically centres its own content, so once flex stretches these to
+   equal height the shorter ones push their avatar down. Lay the card out as a
+   column pinned to the top instead. */
+.person{flex:none;width:80px;text-align:center;transition:transform .16s;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
 .person:hover{transform:translateY(-3px)}
 .person .av{
   width:66px;height:66px;border-radius:50%;object-fit:cover;display:block;
   margin:0 auto 8px;background:var(--panel2);border:1px solid var(--line);
 }
 .person .ph2{display:grid;place-items:center;font-size:24px;color:var(--faint)}
-.person .n{font-size:12.5px;line-height:1.3;font-weight:530;
+.person .av{flex:none}
+/* reserve two lines for the name so every character line starts at the same y */
+.person .n{font-size:12.5px;line-height:1.3;font-weight:530;min-height:2.6em;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.person .r{font-size:11px;color:var(--faint);margin-top:2px}
+.person .r{font-size:11px;line-height:1.35;color:var(--faint);margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .person-head{display:flex;gap:13px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
 .person-head .av{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;
   background:var(--panel2);border:1px solid var(--line)}
