@@ -649,7 +649,7 @@ function mins(n) {
 /** Backfill defaults on every entry so older exports keep working when the
  *  model grows a new field. Cheaper and safer than versioned migrations. */
 function normalizeAll() {
-  DB.entries = DB.entries.filter(e => e && e.id).map(e => blankEntry(e));
+  DB.entries = DB.entries.filter(e => e && e.id).map(e => blankEntry(e));   // also drops overview
   if (!DB.deleted || typeof DB.deleted !== "object") DB.deleted = {};
   if (!DB.skipped || typeof DB.skipped !== "object") DB.skipped = {};
 }
@@ -745,12 +745,15 @@ function fromTMDb(r) {
 }
 
 function blankEntry(base) {
-  return Object.assign({
+  const e = Object.assign({
     genres: [], runtime: 0, seasonsMeta: null, detailLoaded: false,
     addedAt: Date.now(), updatedAt: Date.now(),
     status: "plan", favorite: false, notes: "",
     startedAt: "", finishedAt: "", rewatch: 0, progress: {},
   }, base);
+  delete e.overview;     // re-fetchable; see the extras cache
+  delete e.why;          // deck-only annotation
+  return e;
 }
 
 function addEntry(base) {
@@ -797,10 +800,10 @@ function progressPct(e) {
 
 async function ensureDetail(e, force = false) {
   if (e.detailLoaded && !force) return e;
-  const d = await tmdb(`/${e.mediaType}/${e.tmdbId}`);
+  if (force) extras.delete(extrasKey(e));
+  const d = await fetchWork(e);
   e.title         = d.title || d.name || e.title;
   e.originalTitle = d.original_title || d.original_name || e.originalTitle;
-  e.overview      = d.overview || e.overview;
   e.poster        = d.poster_path || e.poster;
   e.backdrop      = d.backdrop_path || e.backdrop;
   e.genres        = (d.genres || []).map(g => g.name);
@@ -826,17 +829,28 @@ async function ensureDetail(e, force = false) {
   return e;
 }
 
-const castCache = new Map();
+/* Overview and cast are the two big re-fetchable fields. Neither is stored on
+   the entry — together they were over half the synced payload — and one request
+   with append_to_response brings back both. */
+const extras = new Map();
+const extrasKey = e => `${e.mediaType}-${e.tmdbId}-${PREFS.lang}`;
 
-async function ensureCast(e) {
-  const k = `${e.mediaType}-${e.tmdbId}-${PREFS.lang}`;
-  if (castCache.has(k)) return castCache.get(k);
-  const d = await tmdb(`/${e.mediaType}/${e.tmdbId}/credits`);
-  const cast = (d.cast || []).slice(0, 12).map(p => ({
-    id: p.id, name: p.name, character: p.character || "", photo: p.profile_path,
-  }));
-  castCache.set(k, cast);
-  return cast;
+async function fetchWork(e) {
+  const d = await tmdb(`/${e.mediaType}/${e.tmdbId}`, { append_to_response: "credits" });
+  extras.set(extrasKey(e), {
+    overview: d.overview || "",
+    cast: ((d.credits && d.credits.cast) || []).slice(0, 12).map(p => ({
+      id: p.id, name: p.name, character: p.character || "", photo: p.profile_path,
+    })),
+  });
+  return d;
+}
+
+async function ensureExtras(e) {
+  const k = extrasKey(e);
+  if (extras.has(k)) return extras.get(k);
+  await fetchWork(e);
+  return extras.get(k);
 }
 
 const seasonCache = new Map();
@@ -1633,10 +1647,19 @@ function seasonsBlock(e) {
   </div>`;
 }
 
+function overviewBlock(e) {
+  const x = extras.get(extrasKey(e));
+  const text = x && x.overview;
+  const tags = (e.genres && e.genres.length)
+    ? `<div class="genres">${e.genres.map(g => `<span>${esc(g)}</span>`).join("")}</div>` : "";
+  if (!text && !tags) return "";
+  return `<div class="blk">${text ? `<p class="ov">${esc(text)}</p>` : ""}${tags}</div>`;
+}
+
 function castBlock(e) {
-  const cast = castCache.get(`${e.mediaType}-${e.tmdbId}-${PREFS.lang}`);
-  if (!cast) return "";           // still loading, or unavailable
-  if (!cast.length) return "";
+  const x = extras.get(extrasKey(e));
+  const cast = x && x.cast;
+  if (!cast || !cast.length) return "";
   return `
   <div class="blk">
     <div class="sec-title">主要演员</div>
@@ -1685,9 +1708,7 @@ function sheetHTML(e) {
 
     ${castBlock(e)}
 
-    ${e.overview ? `<div class="blk"><p class="ov">${esc(e.overview)}</p>
-      ${e.genres && e.genres.length ? `<div class="genres">${e.genres.map(g => `<span>${esc(g)}</span>`).join("")}</div>` : ""}
-    </div>` : ""}
+    ${overviewBlock(e)}
 
     <div class="blk">
       <div class="sec-title">我的记录</div>
@@ -1762,9 +1783,9 @@ async function openSheet(id, previewEntry = null) {
   }
   if (KEY) {
     try {
-      await ensureCast(e);
+      await ensureExtras(e);
       if (openId === id) refreshSheet();
-    } catch (err) { console.warn("cast fetch failed", err); }
+    } catch (err) { console.warn("overview/cast fetch failed", err); }
   }
 }
 
