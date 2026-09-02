@@ -2289,7 +2289,12 @@ function wire() {
 
   $("#fType").addEventListener("click", ev => {
     const c = ev.target.closest("[data-ftype]");
-    if (c) { PREFS.fType = c.dataset.ftype; savePrefs(); resetLibPaging(); renderLibrary(); }
+    if (!c || c.dataset.ftype === PREFS.fType) return;
+    // This row is the primary filter: switching it starts a fresh look at the
+    // shelf, so the secondary rows go back to 所有.
+    PREFS.fType = c.dataset.ftype;
+    Object.assign(PREFS, { fStatus: "all", fGenre: "all", fDecade: "all" });
+    savePrefs(); resetLibPaging(); renderLibrary();
   });
   $("#fStatus").addEventListener("click", ev => {
     const c = ev.target.closest("[data-fstatus]");
