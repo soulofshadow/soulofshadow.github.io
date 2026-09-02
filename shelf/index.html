@@ -614,8 +614,7 @@ const STATUS_ORDER = ["plan", "watching", "done", "onhold", "dropped"];
 
 /* ---------------- state ---------------- */
 
-let DB    = { version: VERSION, entries: [], deleted: {}, skipped: {},
-              people: null, peopleSeen: {} };
+let DB    = { version: VERSION, entries: [], deleted: {}, skipped: {} };
 let PREFS = { lang: "zh-CN", theme: "dark", view: "grid", sort: "added",
               fType: "all", fStatus: "all", fGenre: "all", fDecade: "all",
               browse: "trend_week", region: "", birthYear: "", homeLang: "" };
@@ -663,9 +662,6 @@ function normalizeAll() {
   DB.entries = DB.entries.filter(e => e && e.id).map(e => blankEntry(e));   // also drops overview
   if (!DB.deleted || typeof DB.deleted !== "object") DB.deleted = {};
   if (!DB.skipped || typeof DB.skipped !== "object") DB.skipped = {};
-  if (!DB.peopleSeen || typeof DB.peopleSeen !== "object") DB.peopleSeen = {};
-  // entries removed since the last analysis shouldn't keep inflating the counts
-  for (const id of Object.keys(DB.peopleSeen)) if (!find(id)) delete DB.peopleSeen[id];
 }
 
 function load() {
@@ -941,7 +937,8 @@ function gridCols(host) {
   }
   const mobile = innerWidth <= 640;
   const min = mobile ? 104 : 138, gap = mobile ? 10 : 15;
-  const w = (host && host.clientWidth) || 0;
+  // a hidden or not-yet-laid-out host measures 0; the viewport is still a real number
+  const w = (host && host.clientWidth) || (document.querySelector("main") || {}).clientWidth || 0;
   if (!w) return mobile ? 3 : 6;
   return Math.max(1, Math.floor((w + gap) / (min + gap)));
 }
@@ -1923,15 +1920,6 @@ function renderStats() {
   const decades = Object.keys(byDecade).sort();
   const maxDec  = Math.max(1, ...Object.values(byDecade));
 
-  // how long after release you get round to something
-  const lags = es
-    .filter(e => e.finishedAt && /^\d{4}$/.test(e.year || ""))
-    .map(e => +e.finishedAt.slice(0, 4) - +e.year)
-    .filter(n => n >= 0 && n < 120)
-    .sort((a, b) => a - b);
-  const medianLag = lags.length ? lags[Math.floor(lags.length / 2)] : null;
-  const sameYear  = lags.filter(n => n <= 1).length;
-
   const stats = [
     [es.length, "总条目"],
     [done.length, "已看完"],
@@ -1940,8 +1928,6 @@ function renderStats() {
     [eps.toLocaleString(), "看过的集数"],
     [hours ? hours.toLocaleString() : "—", "累计小时"],
     [favs.length, "收藏"],
-    [medianLag === null ? "—" : `${medianLag} 年`, "上映到看完（中位）"],
-    [lags.length ? `${Math.round(sameYear / lags.length * 100)}%` : "—", "上映当年就看了"],
   ];
 
   // finished-per-year histogram
@@ -1965,9 +1951,10 @@ function renderStats() {
   for (const e of es) for (const g of (e.genres || [])) genreCount[g] = (genreCount[g] || 0) + 1;
   const topGenres = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 12);
 
+  const cols = gridCols(host);
   const recent = es.filter(e => e.finishedAt)
     .sort((a, b) => b.finishedAt.localeCompare(a.finishedAt))
-    .slice(0, 3 * gridCols(host));      // three full rows, never a ragged tail
+    .slice(0, 3 * cols);                // three full rows, never a ragged tail
 
   host.innerHTML = `
     <div class="stat-grid">
@@ -2020,131 +2007,24 @@ function renderStats() {
         `<span>${esc(g)} <b style="color:var(--accent)">${c}</b></span>`).join("")}</div>
     </div>` : ""}
 
-    ${peopleBlock()}
-
     ${recent.length ? `
     <div class="blk">
       <div class="sec-title">最近看完</div>
       <div class="grid">${recent.map(e => posterCard(e, { noBadge: true })).join("")}</div>
     </div>` : ""}
   `;
-}
 
-/* ============================================================
-   CREDITS ANALYSIS
-   Raw credits are far too big to keep (450 films x a full cast), so this
-   fetches them once, folds them into counts, and stores only the aggregate.
-   Re-running only fetches entries that weren't counted before.
-   ============================================================ */
-
-let analysing = false;
-
-async function analysePeople(onProgress) {
-  if (analysing) return;
-  analysing = true;
-  try {
-    const todo = DB.entries.filter(e => !DB.peopleSeen[e.id]);
-    const tally = { actor: new Map(), director: new Map() };
-
-    // seed with whatever a previous run already counted
-    for (const kind of ["actor", "director"]) {
-      for (const p of ((DB.people && DB.people[kind]) || [])) {
-        tally[kind].set(p.id, { ...p, titles: p.titles ? p.titles.slice() : [] });
-      }
+  // The first paint had no grid to measure, so `cols` was an estimate. Now that one
+  // exists, redo the slice if the estimate was off — once, guarded against looping.
+  const grid = host.querySelector(".grid");
+  if (grid && !host.dataset.recheck) {
+    const real = getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length;
+    if (real && real !== cols) {
+      host.dataset.recheck = "1";
+      renderStats();
+      delete host.dataset.recheck;
     }
-
-    const add = (kind, person, entry) => {
-      const cur = tally[kind].get(person.id)
-        || { id: person.id, name: person.name, photo: person.profile_path || null, n: 0, titles: [] };
-      cur.n++;
-      if (!cur.photo && person.profile_path) cur.photo = person.profile_path;
-      if (cur.titles.length < 6) cur.titles.push(entry.title);
-      tally[kind].set(person.id, cur);
-    };
-
-    let done = 0;
-    const QUEUE = todo.slice();
-    const worker = async () => {
-      while (QUEUE.length) {
-        const e = QUEUE.shift();
-        try {
-          const d = await tmdb(`/${e.mediaType}/${e.tmdbId}`, { append_to_response: "credits" });
-          const c = d.credits || {};
-          for (const p of (c.cast || []).slice(0, 10)) add("actor", p, e);
-          for (const p of (c.crew || [])) if (p.job === "Director") add("director", p, e);
-          DB.peopleSeen[e.id] = 1;
-        } catch (err) {
-          console.warn("credits failed for", e.title, err);
-        }
-        done++;
-        if (onProgress && done % 5 === 0) onProgress(done, todo.length);
-      }
-    };
-    await Promise.all(Array.from({ length: 6 }, worker));
-
-    // keep only people worth showing — a one-off credit is noise, not taste
-    const trim = m => [...m.values()]
-      .filter(p => p.n >= 2)
-      .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "zh"))
-      .slice(0, 60);
-
-    DB.people = { actor: trim(tally.actor), director: trim(tally.director),
-                  at: Date.now(), of: Object.keys(DB.peopleSeen).length };
-    save();
-    return DB.people;
-  } finally {
-    analysing = false;
   }
-}
-
-function peopleStrip(list) {
-  return `<div class="people">${list.map(p => `
-    <button class="person" data-person2="${p.id}" data-p2name="${esc(p.name)}"
-            data-p2photo="${esc(p.photo || "")}" title="${esc(p.titles.join(" · "))}">
-      ${IMG(p.photo, "w185")
-        ? `<img class="av" src="${IMG(p.photo, "w185")}" alt="" loading="lazy">`
-        : `<div class="av ph2">🎭</div>`}
-      <div class="n">${esc(p.name)}</div>
-      <div class="r">${p.n} 部</div>
-    </button>`).join("")}</div>`;
-}
-
-function peopleBlock() {
-  const p = DB.people;
-  const pending = DB.entries.filter(e => !DB.peopleSeen[e.id]).length;
-
-  if (!p) {
-    return `<div class="blk">
-      <div class="sec-title">演职人员</div>
-      <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
-        统计你书架里出现最多的演员和导演。<br>
-        <span class="faint">需要向 TMDb 逐条拉取演职表（${DB.entries.length} 条，约一两分钟）。
-        只保存汇总结果，不保存完整名单。</span>
-      </p>
-      <button class="btn primary" id="analyseBtn">分析演职人员</button>
-      <span id="analyseMsg" class="tiny" style="margin-left:10px"></span>
-    </div>`;
-  }
-
-  return `
-    ${p.actor.length ? `<div class="blk">
-      <div class="sec-title">最常出现的演员</div>
-      ${peopleStrip(p.actor.slice(0, 18))}
-    </div>` : ""}
-    ${p.director.length ? `<div class="blk">
-      <div class="sec-title">最常出现的导演</div>
-      ${peopleStrip(p.director.slice(0, 12))}
-    </div>` : ""}
-    <div class="blk">
-      <div class="tiny faint" style="line-height:1.8">
-        基于 ${p.of} 条记录 · 分析于 ${ymd(p.at)}
-        ${pending ? ` · <b style="color:var(--accent)">有 ${pending} 条新记录未计入</b>` : ""}
-      </div>
-      <div class="row" style="margin-top:9px">
-        <button class="btn sm" id="analyseBtn">${pending ? `分析新增的 ${pending} 条` : "重新分析"}</button>
-        <span id="analyseMsg" class="tiny"></span>
-      </div>
-    </div>`;
 }
 
 /* ============================================================
@@ -2172,11 +2052,6 @@ function mergeRemote(remote) {
 
   for (const [id, ts] of Object.entries((remote && remote.skipped) || {})) {
     if (!DB.skipped[id] || DB.skipped[id] < ts) DB.skipped[id] = ts;
-  }
-  // the credits aggregate is a whole-shelf derivation, so the newer run wins outright
-  if (remote && remote.people && (!DB.people || (remote.people.at || 0) > (DB.people.at || 0))) {
-    DB.people = remote.people;
-    DB.peopleSeen = Object.assign({}, DB.peopleSeen, remote.peopleSeen || {});
   }
   const rDel = (remote && remote.deleted) || {};
   for (const [id, ts] of Object.entries(rDel)) {
@@ -2231,8 +2106,6 @@ function payloadString() {
     entries: DB.entries,
     deleted: DB.deleted,
     skipped: DB.skipped,
-    people: DB.people,
-    peopleSeen: DB.peopleSeen,
     savedAt: new Date().toISOString(),
   }, null, 1);
 }
@@ -2448,34 +2321,7 @@ function wire() {
     d === "undo" ? deckUndo() : deckAct(d);
   });
 
-  $("#statsBody").addEventListener("click", async ev => {
-    const p2 = ev.target.closest("[data-person2]");
-    if (p2) {
-      go("search");
-      showPerson({ id: +p2.dataset.person2, name: p2.dataset.p2name,
-                   photo: p2.dataset.p2photo || null });
-      return;
-    }
-
-    if (ev.target.closest("#analyseBtn")) {
-      const btn = ev.target.closest("#analyseBtn");
-      const msg = $("#analyseMsg");
-      btn.disabled = true;
-      const total = DB.entries.filter(e => !DB.peopleSeen[e.id]).length;
-      msg.innerHTML = `<span class="spinner"></span> 0/${total}`;
-      msg.style.color = "var(--dim)";
-      try {
-        await analysePeople((n, t) => { msg.innerHTML = `<span class="spinner"></span> ${n}/${t}`; });
-        renderStats();
-        toast("演职人员分析完成");
-      } catch (err) {
-        msg.textContent = "分析失败：" + err.message;
-        msg.style.color = "var(--red)";
-        btn.disabled = false;
-      }
-      return;
-    }
-
+  $("#statsBody").addEventListener("click", ev => {
     const c = ev.target.closest("[data-open]");
     if (c) openSheet(c.dataset.open);
   });
