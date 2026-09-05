@@ -1049,7 +1049,15 @@ function renderMoreFilters() {
     `;
 }
 
-function resetLibPaging() { libPages = 1; libShowAll = false; }
+function resetLibPaging() {
+  libPages = 1;
+  libShowAll = false;
+  // The list is about to get much shorter — 450 posters down to 25 rows collapses
+  // the page from ~35,000px to ~2,700px. Leaving the scroll offset deep in the old
+  // content strands the reader at the bottom, and iOS Safari often fails to repaint
+  // after a clamp that large, showing a blank viewport instead.
+  if (page === "library" && window.scrollY > 0) window.scrollTo(0, 0);
+}
 
 function renderLibrary() {
   renderFilters();
