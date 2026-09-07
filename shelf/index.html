@@ -940,6 +940,13 @@ function load() {
 }
 
 let saveTimer;
+
+/** save() is debounced; anything that navigates away must land the write first. */
+function flushSave() {
+  clearTimeout(saveTimer);
+  try { localStorage.setItem(LS_DATA, JSON.stringify(DB)); } catch (e) { console.error(e); }
+}
+
 function save() {
   DB.version = VERSION;
   clearTimeout(saveTimer);
@@ -3069,29 +3076,15 @@ function wire() {
 
 /** One switch drives both the interface and what TMDb is asked for, so every
  *  cached response in the old language has to go. */
+/** Reload rather than re-render in place. Too much state is language-bound —
+ *  fetched search results, the deck, cached episode lists — and patching each
+ *  one left corners in the old language. Boot starts on the shelf. */
 function setLanguage(lang) {
   if (lang === PREFS.lang) return;
   PREFS.lang = lang;
   savePrefs();
-  $("#tmLang").value = lang;
-  $("#setLang").value = lang;
-
-  extras.clear();          // overviews + cast
-  seasonCache.clear();     // episode lists
-  genreIds = null;         // genre names
-  feed.hits = []; feed.people = [];
-  deck.cards = []; deck.i = 0;
-
-  applyStaticI18n();
-  refreshFillLabel();
-  ensureGenres().then(() => { renderLibrary(); if (page === "stats") renderStats(); }).catch(() => {});
-  renderLibrary();
-  if (page === "stats") renderStats();
-  if (page === "deck") loadDeck();
-  if (page === "search") (feed.mode === "search" ? showSearch(feed.q) : showBrowse());
-  const v = $("#verLine");
-  if (v) v.textContent = t("本地共 {0} 条记录 · 数据格式 v{1}", DB.entries.length, VERSION);
-  toast(t("已切换语言"));
+  flushSave();             // a debounced edit must not be lost to the reload
+  location.reload();
 }
 
 let refreshFillLabel = () => {};
