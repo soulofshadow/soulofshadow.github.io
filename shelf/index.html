@@ -796,6 +796,7 @@ const EN = {
 
   // units
   "{0} 小时 {1} 分": "{0}h {1}m", "{0} 小时": "{0}h", "{0} 分钟": "{0} min",
+  "科幻奇幻": "Sci-Fi & Fantasy", "战争政治": "War & Politics",
   "集": "eps", "{0} 集": "{0} ep", "{0}/{1} 集": "{0}/{1} eps", "看完于 {0}": "Watched {0}",
   "重看 {0} 次": "{0} rewatches", "第 {0} 页": "Page {0}",
 };
@@ -1107,7 +1108,21 @@ async function ensureDetail(e, force = false) {
    per-language list. Entries that predate this still carry names, which map
    back to ids through the Chinese list. */
 let GENRES = {};        // { lang: { id: name } }
+
+/* TMDb's Chinese genre list leaves two TV entries in English. Patched here
+   rather than shown as-is; the movie list is fully translated. */
+const GENRE_FIX = {
+  "zh-CN": { 10765: "科幻奇幻", 10768: "战争政治" },
+};
+function applyGenreFix() {
+  for (const [lang, fixes] of Object.entries(GENRE_FIX)) {
+    if (!GENRES[lang]) continue;
+    for (const [id, name] of Object.entries(fixes)) GENRES[lang][id] = name;
+  }
+}
+
 try { GENRES = JSON.parse(localStorage.getItem(LS_GEN) || "{}"); } catch (e) { GENRES = {}; }
+applyGenreFix();        // also repairs a cache written before this existed
 
 async function ensureGenres(lang = PREFS.lang) {
   if (GENRES[lang]) return GENRES[lang];
@@ -1118,8 +1133,9 @@ async function ensureGenres(lang = PREFS.lang) {
   const map = {};
   for (const g of [...(m.genres || []), ...(tv.genres || [])]) map[g.id] = g.name;
   GENRES[lang] = map;
+  applyGenreFix();
   try { localStorage.setItem(LS_GEN, JSON.stringify(GENRES)); } catch (e) {}
-  return map;
+  return GENRES[lang];
 }
 
 /** Reverse lookup so a legacy entry's stored names can become ids. */
