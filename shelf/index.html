@@ -479,6 +479,10 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
           <option value="en-US">English</option>
         </select>
         <p class="tiny faint" style="margin-top:7px" data-i18n-html="help.lang"></p>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm" id="fillTitles"></button>
+          <span id="fillMsg" class="tiny faint"></span>
+        </div>
       </div>
 
       <div class="blk">
@@ -592,6 +596,7 @@ const LS_DATA = "shelf.data.v1";
 const LS_KEY  = "shelf.tmdb.key";
 const LS_PREF = "shelf.prefs.v1";
 const LS_GH   = "shelf.gh.v1";
+const LS_GEN  = "shelf.genres.v1";
 
 const IMG = (p, size) => p ? `https://image.tmdb.org/t/p/${size}${p}` : null;
 
@@ -779,6 +784,8 @@ const EN = {
     "Add a TMDb key in Settings to start searching",
 
   "语言": "Language", "如 1995": "e.g. 1995", "已切换语言": "Language switched",
+  "补全 {0} 条标题": "Fill in {0} titles", "标题已齐全": "All titles present",
+  "完成": "Done", "完成 · {0} 条失败": "Done · {0} failed",
   "意大利": "Italy", "中国大陆": "Mainland China", "美国": "United States",
   "英国": "United Kingdom", "日本": "Japan", "中国香港": "Hong Kong", "中国台湾": "Taiwan",
   "中文": "Chinese", "英语": "English", "意大利语": "Italian", "日语": "Japanese",
@@ -1004,7 +1011,7 @@ function blankEntry(base) {
     genres: [], runtime: 0, seasonsMeta: null, detailLoaded: false,
     addedAt: Date.now(), updatedAt: Date.now(),
     status: "plan", favorite: false, notes: "",
-    startedAt: "", finishedAt: "", rewatch: 0, progress: {},
+    startedAt: "", finishedAt: "", rewatch: 0, progress: {}, titles: {},
   }, base);
   delete e.overview;     // re-fetchable; see the extras cache
   delete e.why;          // deck-only annotation
@@ -1016,7 +1023,7 @@ function addEntry(base) {
   const e = blankEntry(base);
   DB.entries.push(e);
   save();
-  toast(t("已加入书架 · {0}", e.title));
+  toast(t("已加入书架 · {0}", ttl(e)));
   return e;
 }
 
@@ -1059,6 +1066,7 @@ async function ensureDetail(e, force = false) {
   const d = await fetchWork(e);
   e.title         = d.title || d.name || e.title;
   e.originalTitle = d.original_title || d.original_name || e.originalTitle;
+  e.genreIds      = d.genres ? d.genres.map(g => g.id) : e.genreIds;
   e.poster        = d.poster_path || e.poster;
   e.backdrop      = d.backdrop_path || e.backdrop;
   e.genres        = (d.genres || []).map(g => g.name);
@@ -1087,17 +1095,83 @@ async function ensureDetail(e, force = false) {
 /* Overview and cast are the two big re-fetchable fields. Neither is stored on
    the entry — together they were over half the synced payload — and one request
    with append_to_response brings back both. */
+/* Genres are a fixed vocabulary of ~19 names, so they never need a per-title
+   request: keep the numeric ids on the entry and translate through a cached
+   per-language list. Entries that predate this still carry names, which map
+   back to ids through the Chinese list. */
+let GENRES = {};        // { lang: { id: name } }
+try { GENRES = JSON.parse(localStorage.getItem(LS_GEN) || "{}"); } catch (e) { GENRES = {}; }
+
+async function ensureGenres(lang = PREFS.lang) {
+  if (GENRES[lang]) return GENRES[lang];
+  const [m, tv] = await Promise.all([
+    tmdb("/genre/movie/list", { language: lang }),
+    tmdb("/genre/tv/list",    { language: lang }),
+  ]);
+  const map = {};
+  for (const g of [...(m.genres || []), ...(tv.genres || [])]) map[g.id] = g.name;
+  GENRES[lang] = map;
+  try { localStorage.setItem(LS_GEN, JSON.stringify(GENRES)); } catch (e) {}
+  return map;
+}
+
+/** Reverse lookup so a legacy entry's stored names can become ids. */
+function genreNameToId(name) {
+  for (const map of Object.values(GENRES)) {
+    for (const [id, n] of Object.entries(map)) if (n === name) return +id;
+  }
+  return null;
+}
+
+/** Genre names in the current language, whatever the entry happens to store. */
+/** The title in the current language.
+ *  TMDb leaves the English translation blank for films already in English —
+ *  original_title is the answer there, not a fallback to the Chinese one. */
+function ttl(e) {
+  const got = e.titles && e.titles[PREFS.lang];
+  if (got) return got;
+  if (PREFS.lang === "en-US" && e.originalTitle && !/[一-鿿]/.test(e.originalTitle)) return e.originalTitle;
+  return e.title || t("未命名");
+}
+
+function genresOf(e) {
+  const cur = GENRES[PREFS.lang];
+  if (e.genreIds && e.genreIds.length && cur) {
+    const out = e.genreIds.map(id => cur[id]).filter(Boolean);
+    if (out.length) return out;
+  }
+  if (cur && e.genres && e.genres.length) {
+    const out = e.genres.map(nm => { const id = genreNameToId(nm); return id && cur[id] ? cur[id] : nm; });
+    if (out.length) return out;
+  }
+  return e.genres || [];
+}
+
 const extras = new Map();
 const extrasKey = e => `${e.mediaType}-${e.tmdbId}-${PREFS.lang}`;
 
 async function fetchWork(e) {
-  const d = await tmdb(`/${e.mediaType}/${e.tmdbId}`, { append_to_response: "credits" });
+  // The other language's title costs one extra request and a few dozen bytes
+  // of storage, and saves re-fetching the whole shelf whenever the switch flips.
+  const other = PREFS.lang === "en-US" ? "zh-CN" : "en-US";
+  const [d, alt] = await Promise.all([
+    tmdb(`/${e.mediaType}/${e.tmdbId}`, { append_to_response: "credits" }),
+    tmdb(`/${e.mediaType}/${e.tmdbId}`, { language: other }).catch(() => null),
+  ]);
+  e.titles = e.titles || {};
+  e.titles[PREFS.lang] = d.title || d.name || e.title;
+  if (alt) {
+    const altTitle = alt.title || alt.name;
+    if (altTitle) e.titles[other] = altTitle;
+  }
+  e.genreIds = (d.genres || []).map(g => g.id);
   extras.set(extrasKey(e), {
     overview: d.overview || "",
     cast: ((d.credits && d.credits.cast) || []).slice(0, 12).map(p => ({
       id: p.id, name: p.name, character: p.character || "", photo: p.profile_path,
     })),
   });
+  if (find(e.id)) touch(e);
   return d;
 }
 
@@ -1133,13 +1207,13 @@ function posterCard(e, opts = {}) {
     <span class="poster">
       ${src
         ? `<img src="${src}" alt="" loading="lazy" decoding="async">`
-        : `<span class="ph">${esc(e.title)}</span>`}
+        : `<span class="ph">${esc(ttl(e))}</span>`}
       ${opts.noBadge ? "" : `<span class="badge s-${e.status}">${t(st.label)}</span>`}
       ${e.favorite ? `<span class="fav-dot">★</span>` : ""}
       ${e.tmdbScore ? `<span class="score-pill">${e.tmdbScore.toFixed(1)}</span>` : ""}
       ${showProg ? `<span class="prog"><i style="width:${(pct * 100).toFixed(1)}%"></i></span>` : ""}
     </span>
-    <span class="t">${esc(e.title)}</span>
+    <span class="t">${esc(ttl(e))}</span>
     <span class="y">${e.year || "—"} · ${t(e.mediaType === "movie" ? "电影" : "剧集")}</span>
   </button>`;
 }
@@ -1161,7 +1235,7 @@ function listRow(e) {
   <button class="li" data-open="${esc(e.id)}"><span class="li-in">
     ${src ? `<img class="mini" src="${src}" alt="" loading="lazy">` : `<span class="mini"></span>`}
     <span class="body">
-      <span class="n">${e.favorite ? "★ " : ""}${esc(e.title)}</span>
+      <span class="n">${e.favorite ? "★ " : ""}${esc(ttl(e))}</span>
       <span class="m">${bits.map(b => `<span>${b}</span>`).join("")}</span>
       ${e.mediaType === "tv" && pct > 0 && pct < 1
         ? `<span class="bar" style="width:100%;margin-top:6px"><i style="width:${(pct * 100).toFixed(1)}%"></i></span>` : ""}
@@ -1204,15 +1278,15 @@ function applyFilters(list, skip = "") {
     else list = list.filter(e => e.mediaType === PREFS.fType);
   }
   if (skip !== "status" && PREFS.fStatus !== "all") list = list.filter(e => e.status === PREFS.fStatus);
-  if (skip !== "genre"  && PREFS.fGenre !== "all")  list = list.filter(e => (e.genres || []).includes(PREFS.fGenre));
+  if (skip !== "genre"  && PREFS.fGenre !== "all")  list = list.filter(e => genresOf(e).includes(PREFS.fGenre));
   if (skip !== "decade" && PREFS.fDecade !== "all") list = list.filter(e => decadeOf(e) === PREFS.fDecade);
 
   if (q) {
     list = list.filter(e =>
-      e.title.toLowerCase().includes(q) ||
+      Object.values(e.titles || {}).concat(e.title || "").some(x => x.toLowerCase().includes(q)) ||
       (e.originalTitle || "").toLowerCase().includes(q) ||
       (e.notes || "").toLowerCase().includes(q) ||
-      (e.genres || []).some(g => g.toLowerCase().includes(q)));
+      genresOf(e).some(g => g.toLowerCase().includes(q)));
   }
   return list;
 }
@@ -1227,7 +1301,7 @@ function visibleEntries() {
   const s = PREFS.sort;
   list.sort((a, b) => {
     switch (s) {
-      case "title":    return a.title.localeCompare(b.title, localeTag());
+      case "title":    return ttl(a).localeCompare(ttl(b), localeTag());
       case "year":     return (b.year || "0").localeCompare(a.year || "0");
       case "rating":   return (b.tmdbScore || 0) - (a.tmdbScore || 0) || (b.updatedAt - a.updatedAt);
       case "updated":  return b.updatedAt - a.updatedAt;
@@ -1266,7 +1340,7 @@ function renderMoreFilters() {
 
   const gPool = applyFilters(DB.entries.slice(), "genre");
   const gCount = {};
-  for (const e of gPool) for (const g of (e.genres || [])) gCount[g] = (gCount[g] || 0) + 1;
+  for (const e of gPool) for (const g of genresOf(e)) gCount[g] = (gCount[g] || 0) + 1;
   const genres = Object.entries(gCount).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh"));
 
   const dPool = applyFilters(DB.entries.slice(), "decade");
@@ -1580,7 +1654,7 @@ function tasteProfile() {
   const g = {}, d = {};
   for (const e of DB.entries) {
     const w = (e.favorite ? 3 : 1) + (e.status === "done" ? 1 : 0);
-    for (const x of (e.genres || [])) g[x] = (g[x] || 0) + w;
+    for (const x of genresOf(e)) g[x] = (g[x] || 0) + w;
     const dec = decadeOf(e);
     if (dec) d[dec] = (d[dec] || 0) + w;
   }
@@ -1885,6 +1959,15 @@ function allRegularWatched(e) {
   return reg.length > 0 && reg.every(s => (e.progress[s.n] || []).length >= s.count);
 }
 
+/** TMDb's own season names are usually just "第 1 季" / "Season 1", which would
+ *  stay frozen in the language they were fetched in. Regenerate those; keep the
+ *  ones that are actual titles. */
+const GENERIC_SEASON = /^(第\s*[0-9一二三四五六七八九十]+\s*季|Season\s*\d+|Temporada\s*\d+|シーズン\s*\d+|特别篇|特別篇|Specials?)$/i;
+function seasonLabel(s) {
+  if (s.name && !GENERIC_SEASON.test(s.name.trim())) return s.name;
+  return s.n === 0 ? t("特别篇") : t("第 {0} 季", s.n);
+}
+
 function seasonsBlock(e) {
   if (e.mediaType !== "tv" || !e.seasonsMeta || !e.seasonsMeta.length) return "";
   const tot = totalEps(e), w = watchedEps(e);
@@ -1899,7 +1982,7 @@ function seasonsBlock(e) {
       <details class="season" data-season="${s.n}">
         <summary>
           <span class="caret">▶</span>
-          <span class="sname">${esc(s.name || (s.n === 0 ? t("特别篇") : t("第 {0} 季", s.n)))}</span>
+          <span class="sname">${esc(seasonLabel(s))}</span>
           <span class="bar"><i style="width:${(pct * 100).toFixed(0)}%"></i></span>
           <span class="scount">${seen}/${s.count}</span>
         </summary>
@@ -1914,8 +1997,9 @@ function seasonsBlock(e) {
 function overviewBlock(e) {
   const x = extras.get(extrasKey(e));
   const text = x && x.overview;
-  const tags = (e.genres && e.genres.length)
-    ? `<div class="genres">${e.genres.map(g => `<span>${esc(g)}</span>`).join("")}</div>` : "";
+  const gs = genresOf(e);
+  const tags = gs.length
+    ? `<div class="genres">${gs.map(g => `<span>${esc(g)}</span>`).join("")}</div>` : "";
   if (!text && !tags) return "";
   return `<div class="blk">${text ? `<p class="ov">${esc(text)}</p>` : ""}${tags}</div>`;
 }
@@ -1963,8 +2047,8 @@ function sheetHTML(e) {
     <div class="head">
       ${post ? `<img class="p" src="${post}" alt="">` : `<div class="p"></div>`}
       <div style="min-width:0;padding-bottom:4px">
-        <h2>${esc(e.title)}</h2>
-        ${e.originalTitle && e.originalTitle !== e.title
+        <h2>${esc(ttl(e))}</h2>
+        ${e.originalTitle && e.originalTitle !== ttl(e)
           ? `<div class="tiny faint" style="margin-bottom:6px">${esc(e.originalTitle)}</div>` : ""}
         <div class="sub">${sub.map((s, i) => `<span${i ? ' class="dot-sep"' : ""}>${s}</span>`).join("")}</div>
       </div>
@@ -2201,7 +2285,7 @@ function renderStats() {
     ? scored.reduce((a, e) => a + e.tmdbScore, 0) / scored.length : 0;
 
   const genreCount = {};
-  for (const e of es) for (const g of (e.genres || [])) genreCount[g] = (genreCount[g] || 0) + 1;
+  for (const e of es) for (const g of genresOf(e)) genreCount[g] = (genreCount[g] || 0) + 1;
   const topGenres = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 12);
 
   const cols = gridCols(host);
@@ -2679,7 +2763,7 @@ function wire() {
     }
 
     if (ev.target.closest("[data-del]")) {
-      if (!confirm(t("确定把《{0}》从书架移除？此操作不可撤销。", e.title))) return;
+      if (!confirm(t("确定把《{0}》从书架移除？此操作不可撤销。", ttl(e)))) return;
       removeEntry(e.id);
       closeSheet();
       toast(t("已移除"));
@@ -2798,6 +2882,48 @@ function wire() {
   });
   $("#setLang").addEventListener("change", ev => setLanguage(ev.target.value));
 
+  /** Entries added before both languages were kept only carry one title. */
+  const missingTitles = () => DB.entries.filter(e => !(e.titles && e.titles[PREFS.lang]));
+
+  refreshFillLabel = () => {
+    const b = $("#fillTitles"), m = $("#fillMsg");
+    if (!b) return;
+    const k = missingTitles().length;
+    b.disabled = !k;
+    b.textContent = k ? t("补全 {0} 条标题", k) : t("标题已齐全");
+    if (!k && m) { m.textContent = ""; m.style.color = ""; }
+  };
+
+  $("#fillTitles").addEventListener("click", async () => {
+    const todo = missingTitles();
+    if (!todo.length) return;
+    const b = $("#fillTitles"), m = $("#fillMsg");
+    b.disabled = true;
+    m.style.color = "var(--dim)";
+    let done = 0, failed = 0;
+    const q = todo.slice();
+    const worker = async () => {
+      while (q.length) {
+        const e = q.shift();
+        try {
+          const d = await tmdb(`/${e.mediaType}/${e.tmdbId}`);
+          e.titles = e.titles || {};
+          const got = d.title || d.name;
+          if (got) e.titles[PREFS.lang] = got;
+          if (d.genres) e.genreIds = d.genres.map(g => g.id);
+          e.updatedAt = Date.now();
+        } catch (err) { failed++; }
+        done++;
+        if (done % 5 === 0) m.innerHTML = `<span class="spinner"></span> ${done}/${todo.length}`;
+      }
+    };
+    await Promise.all(Array.from({ length: 6 }, worker));
+    save(); renderLibrary();
+    m.textContent = failed ? t("完成 · {0} 条失败", failed) : t("完成");
+    m.style.color = failed ? "var(--red)" : "var(--green)";
+    refreshFillLabel();
+  });
+
   /** "看完" should mean every regular season is done. Imported data (and shows that
    *  gained seasons since) can drift out of that. */
   function staleDone() {
@@ -2816,7 +2942,7 @@ function wire() {
       return;
     }
     const list = hits.slice(0, 8)
-      .map(e => `${e.title}（${watchedEps(e)}/${totalEps(e)} ${t("集")}）`).join("、");
+      .map(e => `${ttl(e)}（${watchedEps(e)}/${totalEps(e)} ${t("集")}）`).join("、");
     if (!confirm(t("有 {0} 部剧集标着「看完」但正季没看完，改成「在看」？", hits.length) + "\n\n"
                  + list + (hits.length > 8 ? t(" …等 {0} 部", hits.length) : ""))) return;
     for (const e of hits) { e.status = "watching"; e.updatedAt = Date.now(); }
@@ -2957,6 +3083,8 @@ function setLanguage(lang) {
   deck.cards = []; deck.i = 0;
 
   applyStaticI18n();
+  refreshFillLabel();
+  ensureGenres().then(() => { renderLibrary(); if (page === "stats") renderStats(); }).catch(() => {});
   renderLibrary();
   if (page === "stats") renderStats();
   if (page === "deck") loadDeck();
@@ -2965,6 +3093,8 @@ function setLanguage(lang) {
   if (v) v.textContent = t("本地共 {0} 条记录 · 数据格式 v{1}", DB.entries.length, VERSION);
   toast(t("已切换语言"));
 }
+
+let refreshFillLabel = () => {};
 
 function setView(v) {
   PREFS.view = v; savePrefs(); resetLibPaging();
@@ -3006,6 +3136,10 @@ function init() {
   wire();
   go("library");
   setSyncUI("");
+  refreshFillLabel();
+  // both lists, so a switch can render genres without waiting on the network
+  if (KEY) ensureGenres("zh-CN").then(() => ensureGenres("en-US"))
+    .then(() => renderLibrary()).catch(() => {});
 
   if (GH.token && GH.gist && GH.auto !== false) {
     lastAutoPull = Date.now();
