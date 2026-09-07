@@ -167,7 +167,7 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 .card{text-align:left;width:100%;display:block;transition:transform .16s cubic-bezier(.2,.8,.3,1)}
 .card:hover{transform:translateY(-4px)}
 .poster{
-  position:relative;aspect-ratio:2/3;border-radius:11px;overflow:hidden;
+  display:block;position:relative;aspect-ratio:2/3;border-radius:11px;overflow:hidden;
   background:var(--panel2);box-shadow:var(--shadow);border:1px solid var(--line);
 }
 .poster img{width:100%;height:100%;object-fit:cover;display:block}
@@ -195,31 +195,33 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 .prog i{display:block;height:100%;background:var(--accent)}
 .card .t{margin-top:8px;font-size:13.5px;font-weight:530;line-height:1.35;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card .y{font-size:12px;color:var(--faint);margin-top:2px;font-variant-numeric:tabular-nums}
+.card .y{display:block;font-size:12px;color:var(--faint);margin-top:2px;font-variant-numeric:tabular-nums}
 
 /* ---------- swipe deck ---------- */
 .deck-wrap{max-width:360px;margin:0 auto}
 .deck-stage{position:relative;aspect-ratio:2/3;margin-bottom:18px;touch-action:pan-y}
-.sc{
+/* Named for the deck specifically: a bare .sc also matched the score in a list
+   row, which inherited position:absolute;inset:0 and covered the whole list. */
+.swipe-card{
   position:absolute;inset:0;border-radius:18px;overflow:hidden;background:var(--panel2);
   border:1px solid var(--line2);box-shadow:0 18px 50px -18px #000c;
   display:flex;flex-direction:column;justify-content:flex-end;
   will-change:transform;user-select:none;-webkit-user-select:none;
 }
-.sc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.sc .veil{position:absolute;inset:0;background:linear-gradient(to top,#000e 4%,#0009 32%,transparent 62%)}
-.sc .meta{position:relative;padding:16px 17px 18px;color:#fff}
-.sc .meta h3{font-size:19px;line-height:1.25;font-weight:640;margin-bottom:5px}
-.sc .meta .sub{font-size:12.5px;opacity:.82;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.sc .meta .ov{font-size:12.5px;line-height:1.6;opacity:.7;
+.swipe-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.swipe-card .veil{position:absolute;inset:0;background:linear-gradient(to top,#000e 4%,#0009 32%,transparent 62%)}
+.swipe-card .meta{position:relative;padding:16px 17px 18px;color:#fff}
+.swipe-card .meta h3{font-size:19px;line-height:1.25;font-weight:640;margin-bottom:5px}
+.swipe-card .meta .sub{font-size:12.5px;opacity:.82;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.swipe-card .meta .ov{font-size:12.5px;line-height:1.6;opacity:.7;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.sc .why{
+.swipe-card .why{
   position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:7px;font-size:11.5px;
   background:#000a;color:#fff;backdrop-filter:blur(6px);max-width:calc(100% - 24px);
 }
-.sc.top{cursor:grab}
-.sc.top:active{cursor:grabbing}
-.sc.glide{transition:transform .32s cubic-bezier(.3,.8,.4,1),opacity .32s}
+.swipe-card.top{cursor:grab}
+.swipe-card.top:active{cursor:grabbing}
+.swipe-card.glide{transition:transform .32s cubic-bezier(.3,.8,.4,1),opacity .32s}
 .stamp{
   position:absolute;top:22px;padding:7px 16px;border-radius:10px;font-size:19px;font-weight:800;
   letter-spacing:.06em;border:3px solid currentColor;opacity:0;pointer-events:none;
@@ -270,13 +272,17 @@ select.field{cursor:pointer;-webkit-appearance:none;appearance:none;
 
 /* ---------- list view ---------- */
 .list{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-.li{display:flex;gap:13px;padding:11px 14px;background:var(--bg);align-items:center;text-align:left;width:100%;transition:background .12s}
+/* <button> only admits phrasing content, so the row is built from spans and the
+   button itself stays a plain block — Safari does not apply display:flex to a
+   button box the way Chromium does, which stacked these into a giant column. */
+.li{display:block;padding:11px 14px;background:var(--bg);text-align:left;width:100%;transition:background .12s}
+.li-in{display:flex;gap:13px;align-items:center;width:100%}
 .li:hover{background:var(--panel)}
-.li .mini{width:40px;height:60px;border-radius:6px;object-fit:cover;background:var(--panel2);flex:none}
-.li .body{flex:1;min-width:0}
-.li .n{font-weight:540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .mini{display:block;width:40px;height:60px;border-radius:6px;object-fit:cover;background:var(--panel2);flex:none}
+.li .body{display:block;flex:1;min-width:0}
+.li .n{display:block;font-weight:540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .li .m{font-size:12.5px;color:var(--faint);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
-.li .sc{font-size:16px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;flex:none}
+.li .sc{display:block;font-size:16px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;flex:none}
 
 /* ---------- modal ---------- */
 .scrim{
@@ -332,7 +338,7 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
 .season[open] .caret{transform:rotate(90deg)}
 .season .sname{font-weight:560;flex:1;min-width:0}
 .season .scount{font-size:12.5px;color:var(--faint);font-variant-numeric:tabular-nums;flex:none}
-.bar{height:3px;background:var(--panel3);border-radius:2px;overflow:hidden;width:56px;flex:none}
+.bar{display:block;height:3px;background:var(--panel3);border-radius:2px;overflow:hidden;width:56px;flex:none}
 .bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
 .eps{padding:5px 12px 13px;border-top:1px solid var(--line)}
 .ep{display:flex;gap:10px;padding:7px 4px;align-items:flex-start;border-radius:7px;cursor:pointer;transition:background .12s}
@@ -893,17 +899,17 @@ function posterCard(e, opts = {}) {
 
   return `
   <button class="card" data-open="${esc(e.id)}">
-    <div class="poster">
+    <span class="poster">
       ${src
         ? `<img src="${src}" alt="" loading="lazy" decoding="async">`
-        : `<div class="ph">${esc(e.title)}</div>`}
+        : `<span class="ph">${esc(e.title)}</span>`}
       ${opts.noBadge ? "" : `<span class="badge s-${e.status}">${st.label}</span>`}
       ${e.favorite ? `<span class="fav-dot">★</span>` : ""}
       ${e.tmdbScore ? `<span class="score-pill">${e.tmdbScore.toFixed(1)}</span>` : ""}
       ${showProg ? `<span class="prog"><i style="width:${(pct * 100).toFixed(1)}%"></i></span>` : ""}
-    </div>
-    <div class="t">${esc(e.title)}</div>
-    <div class="y">${e.year || "—"} · ${e.mediaType === "movie" ? "电影" : "剧集"}</div>
+    </span>
+    <span class="t">${esc(e.title)}</span>
+    <span class="y">${e.year || "—"} · ${e.mediaType === "movie" ? "电影" : "剧集"}</span>
   </button>`;
 }
 
@@ -921,16 +927,16 @@ function listRow(e) {
   if (e.rewatch) bits.push(`重看 ${e.rewatch} 次`);
 
   return `
-  <button class="li" data-open="${esc(e.id)}">
-    ${src ? `<img class="mini" src="${src}" alt="" loading="lazy">` : `<div class="mini"></div>`}
-    <div class="body">
-      <div class="n">${e.favorite ? "★ " : ""}${esc(e.title)}</div>
-      <div class="m">${bits.map(b => `<span>${b}</span>`).join("")}</div>
+  <button class="li" data-open="${esc(e.id)}"><span class="li-in">
+    ${src ? `<img class="mini" src="${src}" alt="" loading="lazy">` : `<span class="mini"></span>`}
+    <span class="body">
+      <span class="n">${e.favorite ? "★ " : ""}${esc(e.title)}</span>
+      <span class="m">${bits.map(b => `<span>${b}</span>`).join("")}</span>
       ${e.mediaType === "tv" && pct > 0 && pct < 1
-        ? `<div class="bar" style="width:100%;margin-top:6px"><i style="width:${(pct * 100).toFixed(1)}%"></i></div>` : ""}
-    </div>
-    ${e.tmdbScore ? `<div class="sc">${e.tmdbScore.toFixed(1)}</div>` : ""}
-  </button>`;
+        ? `<span class="bar" style="width:100%;margin-top:6px"><i style="width:${(pct * 100).toFixed(1)}%"></i></span>` : ""}
+    </span>
+    ${e.tmdbScore ? `<span class="sc">${e.tmdbScore.toFixed(1)}</span>` : ""}
+  </span></button>`;
 }
 
 /* Paging by whole rows means knowing the column count, which is width-dependent.
@@ -1131,15 +1137,15 @@ function resultCard(h) {
   const src = IMG(h.poster, "w342");
   return `
   <button class="card" data-add="${esc(h.id)}" data-tmdb="${h.tmdbId}" data-type="${h.mediaType}">
-    <div class="poster">
+    <span class="poster">
       ${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">`
-            : `<div class="ph">${esc(h.title)}</div>`}
+            : `<span class="ph">${esc(h.title)}</span>`}
       ${owned ? `<span class="badge s-done">已在书架</span>`
               : `<span class="badge">${h.mediaType === "movie" ? "电影" : "剧集"}</span>`}
       ${h.tmdbScore ? `<span class="score-pill">${h.tmdbScore.toFixed(1)}</span>` : ""}
-    </div>
-    <div class="t">${esc(h.title)}</div>
-    <div class="y">${h.year || "—"}</div>
+    </span>
+    <span class="t">${esc(h.title)}</span>
+    <span class="y">${h.year || "—"}</span>
   </button>`;
 }
 
@@ -1150,9 +1156,9 @@ function personCard(p) {
   return `
   <button class="person" data-person="${p.id}" title="${esc(p.name)}">
     ${src ? `<img class="av" src="${src}" alt="" loading="lazy">`
-          : `<div class="av ph2">🎭</div>`}
-    <div class="n">${esc(p.name)}</div>
-    ${known ? `<div class="r">${esc(known)}</div>` : ""}
+          : `<span class="av ph2">🎭</span>`}
+    <span class="n">${esc(p.name)}</span>
+    ${known ? `<span class="r">${esc(known)}</span>` : ""}
   </button>`;
 }
 
@@ -1455,7 +1461,7 @@ async function loadDeck(more = false) {
 function deckCardHTML(c, top) {
   const src = IMG(c.backdrop, "w780") || IMG(c.poster, "w500");
   return `
-  <div class="sc${top ? " top" : ""}" data-card="${esc(c.id)}">
+  <div class="swipe-card${top ? " top" : ""}" data-card="${esc(c.id)}">
     ${src ? `<img src="${src}" alt="" draggable="false">` : ""}
     <div class="veil"></div>
     ${c.why ? `<span class="why">${esc(c.why)}</span>` : ""}
@@ -1557,7 +1563,7 @@ function deckUndo() {
 
 /** Pointer-drag on the top card, with the buttons as the accessible path. */
 function bindTopCard() {
-  const card = $("#deckStage .sc.top");
+  const card = $("#deckStage .swipe-card.top");
   if (!card) return;
   const yes = $(".stamp.yes", card), no = $(".stamp.no", card);
   let id = null, x0 = 0, y0 = 0, dx = 0, dy = 0, dragging = false, t0 = 0, moved = false;
@@ -1696,9 +1702,9 @@ function castBlock(e) {
                 data-castphoto="${esc(p.photo || "")}" title="${esc(p.name)}">
           ${IMG(p.photo, "w185")
             ? `<img class="av" src="${IMG(p.photo, "w185")}" alt="" loading="lazy">`
-            : `<div class="av ph2">🎭</div>`}
-          <div class="n">${esc(p.name)}</div>
-          ${p.character ? `<div class="r">${esc(p.character)}</div>` : ""}
+            : `<span class="av ph2">🎭</span>`}
+          <span class="n">${esc(p.name)}</span>
+          ${p.character ? `<span class="r">${esc(p.character)}</span>` : ""}
         </button>`).join("")}
     </div>
   </div>`;
