@@ -393,16 +393,16 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
 
 <header class="top">
   <div class="top-in">
-    <div class="brand"><span class="mark">🎞</span><span class="name">片柜</span></div>
+    <div class="brand"><span class="mark">🎞</span><span class="name" data-i18n="片柜"></span></div>
     <nav class="tabs" id="tabs">
-      <button class="tab" data-page="library" aria-current="page">书架</button>
-      <button class="tab" data-page="search">搜索</button>
-      <button class="tab" data-page="deck">推荐</button>
-      <button class="tab" data-page="stats">统计</button>
-      <button class="tab" data-page="settings">设置</button>
+      <button class="tab" data-page="library" aria-current="page" data-i18n="书架"></button>
+      <button class="tab" data-page="search" data-i18n="搜索"></button>
+      <button class="tab" data-page="deck" data-i18n="推荐"></button>
+      <button class="tab" data-page="stats" data-i18n="统计"></button>
+      <button class="tab" data-page="settings" data-i18n="设置"></button>
     </nav>
-    <button class="icon-btn" id="syncBtn" title="立即同步" aria-label="立即同步" hidden>⟳</button>
-    <button class="icon-btn" id="themeBtn" title="切换主题" aria-label="切换主题">◐</button>
+    <button class="icon-btn" id="syncBtn" data-i18n-title="立即同步" aria-label="Sync" hidden>⟳</button>
+    <button class="icon-btn" id="themeBtn" data-i18n-title="切换主题" aria-label="Theme">◐</button>
   </div>
 </header>
 
@@ -411,18 +411,18 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
   <!-- ================= LIBRARY ================= -->
   <section class="page on" id="page-library">
     <div class="toolbar">
-      <input class="field grow" id="libQ" type="search" placeholder="在书架里找…  （按 / 聚焦）" autocomplete="off">
+      <input class="field grow" id="libQ" type="search" data-i18n-ph="在书架里找…  （按 / 聚焦）" autocomplete="off">
       <select class="field" id="libSort" style="width:auto;flex:none">
-        <option value="added">最近添加</option>
-        <option value="updated">最近更新</option>
-        <option value="title">标题</option>
-        <option value="year">年份</option>
-        <option value="rating">TMDb 评分</option>
-        <option value="finished">看完日期</option>
+        <option value="added" data-i18n="最近添加"></option>
+        <option value="updated" data-i18n="最近更新"></option>
+        <option value="title" data-i18n="标题"></option>
+        <option value="year" data-i18n="年份"></option>
+        <option value="rating" data-i18n="TMDb 评分"></option>
+        <option value="finished" data-i18n="看完日期"></option>
       </select>
-      <div class="seg" role="group" aria-label="视图">
-        <button id="vGrid" aria-pressed="true" title="海报墙">▦</button>
-        <button id="vList" aria-pressed="false" title="列表">☰</button>
+      <div class="seg" role="group" aria-label="View">
+        <button id="vGrid" aria-pressed="true" data-i18n-title="海报墙">▦</button>
+        <button id="vList" aria-pressed="false" data-i18n-title="列表">☰</button>
       </div>
     </div>
 
@@ -437,11 +437,10 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
   <!-- ================= SEARCH ================= -->
   <section class="page" id="page-search">
     <div class="toolbar">
-      <input class="field grow" id="tmQ" type="search" placeholder="搜电影 / 剧集 / 演员…  例：沙丘、梁朝伟、Breaking Bad" autocomplete="off">
+      <input class="field grow" id="tmQ" type="search" data-i18n-ph="搜电影 / 剧集 / 演员…  例：沙丘、梁朝伟、Breaking Bad" autocomplete="off">
       <select class="field" id="tmLang" style="width:auto;flex:none">
         <option value="zh-CN">中文</option>
         <option value="en-US">English</option>
-        <option value="ja-JP">日本語</option>
       </select>
     </div>
     <div class="filterbar" id="browseBar"></div>
@@ -463,134 +462,113 @@ label.lb{display:block;font-size:12.5px;color:var(--faint);margin-bottom:5px;fon
     <div style="max-width:620px">
 
       <div class="blk" style="margin-top:0">
-        <div class="sec-title">TMDb 接入</div>
-        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
-          填入你的 <b>API Key (v3)</b> 或 <b>Read Access Token (v4)</b>，两种都认。<br>
-          <span class="faint">只保存在这台设备的浏览器里（localStorage），不会上传、不会进入网页源码。</span>
-        </p>
-        <input class="field" id="keyIn" type="password" placeholder="粘贴 API Key 或 Bearer Token" autocomplete="off" spellcheck="false">
+        <div class="sec-title" data-i18n="TMDb 接入"></div>
+        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7" data-i18n-html="help.tmdb"></p>
+        <input class="field" id="keyIn" type="password" data-i18n-ph="粘贴 API Key 或 Bearer Token" autocomplete="off" spellcheck="false">
         <div class="row" style="margin-top:11px">
-          <button class="btn primary" id="keySave">保存并测试</button>
-          <button class="btn sm" id="keyShow">显示</button>
+          <button class="btn primary" id="keySave" data-i18n="保存并测试"></button>
+          <button class="btn sm" id="keyShow" data-i18n="显示"></button>
           <span id="keyMsg" class="tiny"></span>
         </div>
       </div>
 
       <div class="blk">
-        <div class="sec-title">元数据语言</div>
+        <div class="sec-title" data-i18n="语言"></div>
         <select class="field" id="setLang">
           <option value="zh-CN">中文（简体）</option>
           <option value="en-US">English</option>
-          <option value="ja-JP">日本語</option>
         </select>
-        <p class="tiny faint" style="margin-top:7px">影响搜索结果与刷新时抓取的标题、简介。</p>
+        <p class="tiny faint" style="margin-top:7px" data-i18n-html="help.lang"></p>
       </div>
 
       <div class="blk">
-        <div class="sec-title">院线地区</div>
+        <div class="sec-title" data-i18n="院线地区"></div>
         <select class="field" id="setRegion">
-          <option value="">不限</option>
-          <option value="IT">意大利</option>
-          <option value="CN">中国大陆</option>
-          <option value="US">美国</option>
-          <option value="GB">英国</option>
-          <option value="JP">日本</option>
-          <option value="HK">中国香港</option>
-          <option value="TW">中国台湾</option>
+          <option value=""   data-i18n="不限"></option>
+          <option value="IT" data-i18n="意大利"></option>
+          <option value="CN" data-i18n="中国大陆"></option>
+          <option value="US" data-i18n="美国"></option>
+          <option value="GB" data-i18n="英国"></option>
+          <option value="JP" data-i18n="日本"></option>
+          <option value="HK" data-i18n="中国香港"></option>
+          <option value="TW" data-i18n="中国台湾"></option>
         </select>
-        <p class="tiny faint" style="margin-top:7px">只影响「正在热映」和「即将上映」两个榜单排片。</p>
+        <p class="tiny faint" style="margin-top:7px" data-i18n-html="help.region"></p>
       </div>
 
       <div class="blk">
-        <div class="sec-title">推荐口味</div>
-        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
-          「推荐」页主要看你书架里的类型和年代分布。<br>
-          <span class="faint">下面两项是补充：人最可能看过的是自己 12–25 岁时上映的片子，母语则决定本土片的比重。留空就不参与。</span>
-        </p>
+        <div class="sec-title" data-i18n="推荐口味"></div>
+        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7" data-i18n-html="help.taste"></p>
         <div class="form-grid">
           <div>
-            <label class="lb" for="setBirth">出生年份</label>
-            <input class="field" id="setBirth" type="number" min="1900" max="2020" placeholder="如 1995">
+            <label class="lb" for="setBirth" data-i18n="出生年份"></label>
+            <input class="field" id="setBirth" type="number" min="1900" max="2020" data-i18n-ph="如 1995">
           </div>
           <div>
-            <label class="lb" for="setHomeLang">母语 / 出生地</label>
+            <label class="lb" for="setHomeLang" data-i18n="母语 / 出生地"></label>
             <select class="field" id="setHomeLang">
-              <option value="">不指定</option>
-              <option value="zh">中文</option>
-              <option value="en">英语</option>
-              <option value="it">意大利语</option>
-              <option value="ja">日语</option>
-              <option value="ko">韩语</option>
-              <option value="fr">法语</option>
-              <option value="es">西班牙语</option>
-              <option value="de">德语</option>
+              <option value=""   data-i18n="不指定"></option>
+              <option value="zh" data-i18n="中文"></option>
+              <option value="en" data-i18n="英语"></option>
+              <option value="it" data-i18n="意大利语"></option>
+              <option value="ja" data-i18n="日语"></option>
+              <option value="ko" data-i18n="韩语"></option>
+              <option value="fr" data-i18n="法语"></option>
+              <option value="es" data-i18n="西班牙语"></option>
+              <option value="de" data-i18n="德语"></option>
             </select>
           </div>
         </div>
         <div class="row" style="margin-top:11px">
-          <button class="btn sm" id="resetSkipped">清空「没看过」记录</button>
+          <button class="btn sm" id="resetSkipped" data-i18n="清空「没看过」记录"></button>
           <span id="skipMsg" class="tiny faint"></span>
         </div>
       </div>
 
       <div class="blk">
-        <div class="sec-title">云同步 · GitHub Gist</div>
-        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
-          用一个 <b>私密 Gist</b> 当存储，手机和电脑共用同一份记录。<br>
-          <span class="faint">需要一个 GitHub Token，<b>只勾 gist 一个权限</b>就够。和 TMDb key 一样只存本机，不会进仓库。</span>
-        </p>
-        <input class="field" id="ghToken" type="password" placeholder="GitHub Token（classic：只勾 gist；fine-grained：Gists = Read and write）" autocomplete="off" spellcheck="false">
+        <div class="sec-title" data-i18n="云同步 · GitHub Gist"></div>
+        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7" data-i18n-html="help.gist"></p>
+        <input class="field" id="ghToken" type="password" data-i18n-ph="GitHub Token（classic：只勾 gist；fine-grained：Gists = Read and write）" autocomplete="off" spellcheck="false">
         <div class="row" style="margin-top:9px">
-          <input class="field" id="ghGist" placeholder="Gist ID（第一次留空，点右边新建）" autocomplete="off" spellcheck="false" style="flex:1;min-width:170px">
-          <button class="btn" id="ghNew">新建私密 Gist</button>
+          <input class="field" id="ghGist" data-i18n-ph="Gist ID（第一次留空，点右边新建）" autocomplete="off" spellcheck="false" style="flex:1;min-width:170px">
+          <button class="btn" id="ghNew" data-i18n="新建私密 Gist"></button>
         </div>
         <div class="row" style="margin-top:11px">
-          <button class="btn primary" id="ghSync">立即同步</button>
-          <button class="btn" id="ghSave">保存设置</button>
+          <button class="btn primary" id="ghSync" data-i18n="立即同步"></button>
+          <button class="btn" id="ghSave" data-i18n="保存设置"></button>
           <label class="row tiny muted" style="gap:6px;cursor:pointer">
-            <input type="checkbox" id="ghAuto" style="accent-color:var(--accent);width:15px;height:15px">改动后自动同步
+            <input type="checkbox" id="ghAuto" style="accent-color:var(--accent);width:15px;height:15px"><span data-i18n="改动后自动同步"></span>
           </label>
         </div>
         <div id="ghMsg" class="tiny" style="margin-top:10px;line-height:1.6"></div>
       </div>
 
       <div class="blk">
-        <div class="sec-title">本地备份</div>
-        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
-          没开云同步时，数据只在本浏览器的 localStorage 里 —— 换浏览器、清缓存都会丢。
-          <b>不管开没开同步，偶尔导出一份 JSON 都是值得的</b>。
-        </p>
+        <div class="sec-title" data-i18n="本地备份"></div>
+        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7" data-i18n-html="help.backup"></p>
         <div class="row">
-          <button class="btn primary" id="expBtn">导出 JSON</button>
-          <button class="btn" id="impBtn">导入 JSON</button>
+          <button class="btn primary" id="expBtn" data-i18n="导出 JSON"></button>
+          <button class="btn" id="impBtn" data-i18n="导入 JSON"></button>
           <input type="file" id="impFile" accept="application/json,.json" hidden>
         </div>
-        <p class="tiny faint" style="margin-top:9px">导入采用合并策略：同一条目以「更新时间较新」的一方为准，不会误删。</p>
+        <p class="tiny faint" style="margin-top:9px" data-i18n-html="help.import"></p>
       </div>
 
       <div class="blk">
-        <div class="sec-title">数据校正</div>
-        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7">
-          找出标着「看完」但正季其实没看全的剧集，改成「在看」。<br>
-          <span class="faint">特别篇不计入判断；完成日期会保留不动。</span>
-        </p>
-        <button class="btn" id="fixStatus">检查并校正</button>
+        <div class="sec-title" data-i18n="数据校正"></div>
+        <p class="tiny muted" style="margin-bottom:11px;line-height:1.7" data-i18n-html="help.repair"></p>
+        <button class="btn" id="fixStatus" data-i18n="检查并校正"></button>
         <div id="fixMsg" class="tiny" style="margin-top:9px;line-height:1.7"></div>
       </div>
 
       <div class="blk">
-        <div class="sec-title">危险区域</div>
-        <button class="btn danger" id="wipeBtn">清空整个书架</button>
+        <div class="sec-title" data-i18n="危险区域"></div>
+        <button class="btn danger" id="wipeBtn" data-i18n="清空整个书架"></button>
       </div>
 
       <div class="blk">
-        <div class="sec-title">关于</div>
-        <p class="tiny faint" style="line-height:1.8">
-          纯静态单文件，无后端、无账号、无追踪。数据只在你自己的浏览器里。<br>
-          影视数据来自 <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDb)</a>，
-          本站未获 TMDb 认可或认证。<br>
-          <span id="verLine"></span>
-        </p>
+        <div class="sec-title" data-i18n="关于"></div>
+        <p class="tiny faint" style="line-height:1.8" data-i18n-html="help.about"></p>
       </div>
 
     </div>
@@ -636,6 +614,256 @@ let KEY   = "";
 let GH    = { token: "", gist: "", auto: true, lastSync: 0 };
 let page  = "library";
 
+/* ============================================================
+   I18N
+   Keyed on the Chinese source so the code still reads as prose and the
+   zh path needs no lookup at all. {0} marks an interpolation slot.
+   ============================================================ */
+
+const EN = {
+  // shell
+  "片柜": "Shelf", "书架": "Shelf", "搜索": "Search", "推荐": "Discover",
+  "统计": "Stats", "设置": "Settings",
+  "切换主题": "Toggle theme", "立即同步": "Sync now", "关闭": "Close",
+
+  // media + status
+  "电影": "Movie", "剧集": "Series", "全部": "All", "★ 收藏": "★ Favourites",
+  "想看": "Want", "在看": "Watching", "看完": "Watched", "搁置": "On hold", "弃坑": "Dropped",
+  "所有状态": "Any status", "所有类型": "Any genre", "所有年代": "Any decade",
+  "★ 已收藏": "★ Favourited", "☆ 收藏": "☆ Favourite",
+
+  // library
+  "在书架里找…  （按 / 聚焦）": "Search your shelf…  (press / to focus)",
+  "最近添加": "Recently added", "最近更新": "Recently updated", "标题": "Title",
+  "年份": "Year", "TMDb 评分": "TMDb score", "看完日期": "Date watched",
+  "海报墙": "Posters", "列表": "List", "视图": "View",
+  "显示 {0} / {1} 条": "Showing {0} of {1}", "✕ 清除筛选": "✕ Clear filters",
+  "加载更多 · 还有 {0} 条": "Load more · {0} left", "显示全部": "Show all",
+  "已显示全部 {0} 条": "All {0} shown",
+  "{0} 年代 · {1}": "{0}s · {1}", "TMDb {0} 分以上 · {1}": "TMDb {0}+ · {1}",
+  "书架还是空的": "Your shelf is empty",
+  "去「搜索」加第一部片子": "Add your first title from Search",
+  "，不过得先在「设置」里填 TMDb key": ", once you've added a TMDb key in Settings",
+  "没有符合条件的条目": "Nothing matches these filters",
+
+  // search + charts
+  "搜电影 / 剧集 / 演员…  例：沙丘、梁朝伟、Breaking Bad":
+    "Films, series, people…  e.g. Dune, Tony Leung, Breaking Bad",
+  "本周热门": "Trending this week", "今日热门": "Trending today",
+  "热门电影": "Popular films", "热门剧集": "Popular series",
+  "高分电影": "Top rated films", "高分剧集": "Top rated series",
+  "正在热映": "In theatres", "即将上映": "Coming soon", "本周播出": "On the air",
+  "演职人员": "People", "加载更多": "Load more", "没有更多了": "That's everything",
+  "加载中…": "Loading…", "已在书架": "On your shelf",
+  "没有片名匹配「{0}」": "No titles match “{0}”",
+  "，试试上面的演职人员": " — try the people above",
+  "这个榜单暂时没有内容": "This chart is empty right now",
+  "{0} 部参演作品": "{0} credits", "← 返回搜索": "← Back to search",
+  "还没有 TMDb key": "No TMDb key yet",
+  "去「设置」里填一个，搜索和榜单才能用": "Add one in Settings to search and browse",
+  "先去「设置」填 TMDb key": "Add a TMDb key in Settings",
+  "API key 无效 —— 去设置里检查一下": "That API key is invalid — check Settings",
+  "还没填 API key": "No API key yet", "请求失败：{0}": "Request failed: {0}",
+
+  // detail sheet
+  "我的记录": "Your record",
+  "还没加入书架 —— 选一个状态（或收藏、勾选剧集）即可加入":
+    "Not on your shelf yet — pick a status, favourite it, or tick an episode to add it",
+  "开始日期": "Started", "重看次数": "Rewatches", "短评 / 笔记": "Notes",
+  "随便写点什么…": "Anything you want to remember…",
+  "主要演员": "Cast", "刷新元数据": "Refresh metadata", "TMDb 页面 ↗": "View on TMDb ↗",
+  "从书架移除": "Remove from shelf", "刷新中…": "Refreshing…",
+  "元数据已更新": "Metadata refreshed", "刷新失败：{0}": "Refresh failed: {0}",
+  "先去设置里填 API key": "Add an API key in Settings first",
+  "添加于 {0} · 更新于 {1}": "Added {0} · updated {1}",
+  "确定把《{0}》从书架移除？此操作不可撤销。":
+    "Remove “{0}” from your shelf? This cannot be undone.",
+  "已移除": "Removed", "已加入书架 · {0}": "Added · {0}", "已经在书架里了": "Already on your shelf",
+  "未命名": "Untitled",
+
+  // seasons
+  "分季进度": "Season progress", "特别篇": "Specials", "第 {0} 季": "Season {0}",
+  "展开加载剧集…": "Expand to load episodes…", "第 {0} 集": "Episode {0}",
+  "全部标记已看": "Mark all watched", "全部取消": "Clear all",
+  "所有正季标记已看": "Mark all seasons watched", "取消所有正季": "Clear all seasons",
+  "已标记 {0} 季 · {1} 集": "Marked {0} seasons · {1} episodes",
+  "已取消所有正季": "Cleared all seasons", "加载失败：{0}": "Couldn't load: {0}",
+  "{0} 季 · {1} 集": "{0} seasons · {1} episodes",
+
+  // deck
+  "正在挑片…": "Picking titles…", "这一轮划完了": "That's the batch",
+  "再来一批": "Another batch",
+  "推荐是从你看过的东西里推出来的，先记几部再回来":
+    "Suggestions come from what's on your shelf — add a few first",
+  "看过": "Seen it", "没看过": "Not seen", "撤销上一张": "Undo last card",
+  "左划 = 没看过 · 右划 = 看过 · ＋ 加入想看":
+    "Swipe left = not seen · right = seen · ＋ adds to Want",
+  "还剩 {0} 张": "{0} left",
+  "你常看{0}": "You watch a lot of {0}", "{0}高口碑": "Well-rated {0}",
+  "{0}剧集": "{0} series", "{0} 年代": "The {0}s",
+  "你 12–25 岁时的片子": "From when you were 12–25",
+  "你的母语电影": "Films in your language", "你的母语剧集": "Series in your language",
+  "因为你看过《{0}》": "Because you watched “{0}”",
+
+  // stats
+  "书架为空，先记几部再来看": "Nothing to chart yet — add a few titles",
+  "总条目": "Titles", "已看完": "Finished", "看过的集数": "Episodes watched",
+  "累计小时": "Hours", "收藏": "Favourites",
+  "每年看完": "Finished per year", "书架的 TMDb 评分分布 · 均分 {0}":
+    "TMDb score spread · average {0}",
+  "看的片子出自哪些年代": "Which eras you watch", "常看类型": "Genres you watch",
+  "最近看完": "Recently finished",
+  "{0}：{1} 部": "{0}: {1}", "{0} 年代：{1} 部": "{0}s: {1}", "{0}–{1} 分：{2} 部": "{0}–{1}: {2}",
+
+  // settings
+  "TMDb 接入": "TMDb access",
+  "粘贴 API Key 或 Bearer Token": "Paste an API key or bearer token",
+  "保存并测试": "Save and test", "显示": "Show", "隐藏": "Hide",
+  "先粘贴一个 key": "Paste a key first", "测试中…": "Testing…",
+  "✓ 有效，已保存到本机": "✓ Valid, saved on this device", "✕ key 无效": "✕ Invalid key",
+  "元数据语言": "Language", "界面与 TMDb 数据都使用这个语言。":
+    "Sets both the interface and the data fetched from TMDb.",
+  "院线地区": "Cinema region", "不限": "Anywhere",
+  "只影响「正在热映」和「即将上映」两个榜单排片。":
+    "Only affects the In theatres and Coming soon charts.",
+  "院线地区已切换": "Region updated", "已取消地区限定": "Region cleared",
+  "推荐口味": "Suggestion inputs", "出生年份": "Birth year", "母语 / 出生地": "First language",
+  "不指定": "Not set",
+  "已记录，推荐会参考你的成长年代": "Saved — suggestions will lean on your formative years",
+  "已记录母语偏好": "Language preference saved", "已取消": "Cleared",
+  "清空「没看过」记录": "Clear dismissed titles", "本来就是空的": "Nothing to clear",
+  "已清空 {0} 条": "Cleared {0}",
+  "清空 {0} 条「没看过」记录？它们会重新出现在推荐里。":
+    "Clear {0} dismissed titles? They'll show up in Discover again.",
+  "数据校正": "Repair", "检查并校正": "Check and repair",
+  "✓ 没有需要校正的条目": "✓ Nothing needs repairing",
+  "✓ 已把 {0} 部改成「在看」": "✓ Moved {0} to Watching",
+  "已校正 {0} 部剧集": "Repaired {0} series",
+  "本地备份": "Local backup", "导出 JSON": "Export JSON", "导入 JSON": "Import JSON",
+  "已导出 {0} 条": "Exported {0}", "不是合法的 JSON 文件": "Not valid JSON",
+  "文件里没有 entries 字段": "No entries field in that file",
+  "导入完成 · 新增 {0}，更新 {1}": "Imported · {0} added, {1} updated",
+  "，删除 {0}": ", {0} removed",
+  "危险区域": "Danger zone", "清空整个书架": "Erase the whole shelf",
+  "确定清空全部 {0} 条记录？强烈建议先导出备份。":
+    "Erase all {0} records? Export a backup first.",
+  "再确认一次：这会永久删除所有记录。": "Once more: this permanently deletes everything.",
+  "书架已清空": "Shelf erased", "关于": "About",
+  "本地共 {0} 条记录 · 数据格式 v{1}": "{0} records on this device · schema v{1}",
+  "保存失败：浏览器存储可能已满，请先导出备份":
+    "Save failed — browser storage may be full. Export a backup.",
+
+  // sync
+  "云同步 · GitHub Gist": "Sync · GitHub Gist",
+  "新建私密 Gist": "Create secret gist", "保存设置": "Save", "改动后自动同步": "Sync automatically",
+  "还没填 GitHub Token": "No GitHub token yet", "Token 无效或已过期": "Token invalid or expired",
+  "Token 缺少 gist 权限": "Token is missing the gist scope",
+  "找不到这个 Gist（ID 错了，或 Token 不是同一个账号的）":
+    "Gist not found — wrong ID, or the token belongs to another account",
+  "Gist 里没有 {0}": "No {0} in that gist", "同步失败：{0}": "Sync failed: {0}",
+  "同步中…": "Syncing…", "已同步": "Up to date", "上次同步 {0}": "Last synced {0}",
+  "拉回 {0} 新增 / {1} 更新 / {2} 删除": "Pulled {0} new / {1} updated / {2} removed",
+  "已是最新": "Already up to date", "同步完成 · 合并了 {0} 处改动": "Synced · merged {0} changes",
+  "同步完成 · 已是最新": "Synced · already up to date",
+  "已从云端合并 {0} 处改动": "Merged {0} changes from the cloud",
+  "先填好 Token 和 Gist ID": "Fill in the token and gist ID first",
+  "先填 Token": "Fill in the token first",
+  "已保存，可以同步了": "Saved — ready to sync", "已保存": "Saved",
+  "已新建私密 Gist {0}": "Created secret gist {0}",
+  "Gist 已创建 · 把这个 ID 填到其他设备上": "Gist created — put this ID on your other devices",
+  "已经填了 Gist ID，确定再新建一个？现有的那个不会被删除，但这台设备会改用新的。":
+    "A gist ID is already set. Create another? The old one is kept, but this device will switch.",
+  "片柜 Shelf — 影视记录数据（由网页自动同步，请勿手动编辑）":
+    "Shelf — watch records (synced automatically; don't edit by hand)",
+  "先去「设置」填一个 TMDb key，搜索才能用":
+    "Add a TMDb key in Settings to start searching",
+
+  "语言": "Language", "如 1995": "e.g. 1995", "已切换语言": "Language switched",
+  "意大利": "Italy", "中国大陆": "Mainland China", "美国": "United States",
+  "英国": "United Kingdom", "日本": "Japan", "中国香港": "Hong Kong", "中国台湾": "Taiwan",
+  "中文": "Chinese", "英语": "English", "意大利语": "Italian", "日语": "Japanese",
+  "韩语": "Korean", "法语": "French", "西班牙语": "Spanish", "德语": "German",
+  "GitHub Token（classic：只勾 gist；fine-grained：Gists = Read and write）":
+    "GitHub token (classic: gist scope only; fine-grained: Gists = Read and write)",
+  "Gist ID（第一次留空，点右边新建）": "Gist ID (leave blank the first time, then create one)",
+
+  // units
+  "{0} 小时 {1} 分": "{0}h {1}m", "{0} 小时": "{0}h", "{0} 分钟": "{0} min",
+  "集": "eps", "{0} 集": "{0} ep", "{0}/{1} 集": "{0}/{1} eps", "看完于 {0}": "Watched {0}",
+  "重看 {0} 次": "{0} rewatches", "第 {0} 页": "Page {0}",
+};
+
+
+/** Paragraphs that contain markup get a symbolic key and a body per language. */
+const PROSE = {
+  "help.tmdb": {
+    "zh-CN": '填入你的 <b>API Key (v3)</b> 或 <b>Read Access Token (v4)</b>，两种都认。<br>' +
+             '<span class="faint">只保存在这台设备的浏览器里（localStorage），不会上传、不会进入网页源码。</span>',
+    "en-US": 'Paste your <b>API key (v3)</b> or <b>read access token (v4)</b> — either works.<br>' +
+             '<span class="faint">Kept in this browser only (localStorage). Never uploaded, never in the page source.</span>',
+  },
+  "help.lang": {
+    "zh-CN": "界面与 TMDb 抓取的标题、简介都使用这个语言。",
+    "en-US": "Sets the interface as well as the titles and summaries fetched from TMDb.",
+  },
+  "help.region": {
+    "zh-CN": "只影响「正在热映」和「即将上映」两个榜单排片。",
+    "en-US": "Only affects the In theatres and Coming soon charts.",
+  },
+  "help.taste": {
+    "zh-CN": '「推荐」页主要看你书架里的类型和年代分布。<br>' +
+             '<span class="faint">下面两项是补充：人最可能看过的是自己 12–25 岁时上映的片子，母语则决定本土片的比重。留空就不参与。</span>',
+    "en-US": 'Discover mostly reads the genres and eras already on your shelf.<br>' +
+             '<span class="faint">These two are extras: people are likeliest to have seen what came out when they were 12–25, and a first language shapes how much local cinema appears. Leave blank to skip.</span>',
+  },
+  "help.gist": {
+    "zh-CN": '用一个 <b>私密 Gist</b> 当存储，手机和电脑共用同一份记录。<br>' +
+             '<span class="faint">需要一个 GitHub Token，<b>只勾 gist 一个权限</b>就够。和 TMDb key 一样只存本机，不会进仓库。</span>',
+    "en-US": 'A <b>secret gist</b> holds one copy your phone and desktop share.<br>' +
+             '<span class="faint">Needs a GitHub token with <b>only the gist scope</b>. Like the TMDb key it stays on this device and never reaches the repo.</span>',
+  },
+  "help.backup": {
+    "zh-CN": '没开云同步时，数据只在本浏览器的 localStorage 里 —— 换浏览器、清缓存都会丢。' +
+             '<b>不管开没开同步，偶尔导出一份 JSON 都是值得的</b>。',
+    "en-US": 'Without sync your records live only in this browser — a new browser or a cleared cache loses them. ' +
+             '<b>Exporting a JSON now and then is worth it either way.</b>',
+  },
+  "help.import": {
+    "zh-CN": "导入采用合并策略：同一条目以「更新时间较新」的一方为准，不会误删。",
+    "en-US": "Importing merges: for the same title the more recently updated side wins. Nothing is dropped.",
+  },
+  "help.repair": {
+    "zh-CN": '找出标着「看完」但正季其实没看全的剧集，改成「在看」。<br>' +
+             '<span class="faint">特别篇不计入判断；完成日期会保留不动。</span>',
+    "en-US": 'Finds series marked Watched whose regular seasons aren\'t actually complete and moves them to Watching.<br>' +
+             '<span class="faint">Specials don\'t count, and finish dates are left alone.</span>',
+  },
+  "help.about": {
+    "zh-CN": '纯静态单文件，无后端、无账号、无追踪。数据只在你自己的浏览器里。<br>' +
+             '影视数据来自 <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDb)</a>，' +
+             '本站未获 TMDb 认可或认证。<br><span id="verLine"></span>',
+    "en-US": 'One static file. No backend, no account, no tracking — your records stay in your own browser.<br>' +
+             'Data from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">The Movie Database (TMDb)</a>. ' +
+             'This site is not endorsed or certified by TMDb.<br><span id="verLine"></span>',
+  },
+};
+
+const tp = k => (PROSE[k] && (PROSE[k][PREFS.lang] || PROSE[k]["zh-CN"])) || k;
+
+function t(zh, ...args) {
+  let out = PREFS.lang === "en-US" ? (EN[zh] !== undefined ? EN[zh] : zh) : zh;
+  return args.length ? out.replace(/\{(\d+)\}/g, (m, i) => args[i] !== undefined ? args[i] : m) : out;
+}
+
+/** Text nodes, placeholders and titles declared in the static markup. */
+function applyStaticI18n() {
+  document.documentElement.lang = PREFS.lang === "en-US" ? "en" : "zh-CN";
+  for (const el of $$("[data-i18n]"))       el.textContent = t(el.dataset.i18n);
+  for (const el of $$("[data-i18n-html]"))  el.innerHTML   = tp(el.dataset.i18nHtml);
+  for (const el of $$("[data-i18n-ph]"))    el.placeholder = t(el.dataset.i18nPh);
+  for (const el of $$("[data-i18n-title]")) el.title       = t(el.dataset.i18nTitle);
+}
+
 /* ---------------- tiny utils ---------------- */
 
 const $  = (s, r = document) => r.querySelector(s);
@@ -655,6 +883,8 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove("on"), 2600);
 }
 
+const localeTag = () => PREFS.lang === "en-US" ? "en-GB" : "zh-CN";
+
 const ymd = d => {
   if (!d) return "";
   const x = new Date(d);
@@ -665,7 +895,8 @@ const yearOf = d => (d && /^\d{4}/.test(d)) ? d.slice(0, 4) : "";
 function mins(n) {
   if (!n) return "";
   const h = Math.floor(n / 60), m = n % 60;
-  return h ? `${h} 小时 ${m ? m + " 分" : ""}`.trim() : `${m} 分钟`;
+  if (!h) return t("{0} 分钟", m);
+  return m ? t("{0} 小时 {1} 分", h, m) : t("{0} 小时", h);
 }
 
 /* ---------------- persistence ---------------- */
@@ -709,7 +940,7 @@ function save() {
     try {
       localStorage.setItem(LS_DATA, JSON.stringify(DB));
     } catch (e) {
-      toast("保存失败：浏览器存储可能已满，请先导出备份");
+      toast(t("保存失败：浏览器存储可能已满，请先导出备份"));
       console.error(e);
     }
     scheduleSync();
@@ -757,7 +988,7 @@ function fromTMDb(r) {
     id: idOf(type, r.id),
     tmdbId: r.id,
     mediaType: type,
-    title: r.title || r.name || "未命名",
+    title: r.title || r.name || t("未命名"),
     originalTitle: r.original_title || r.original_name || "",
     year: yearOf(date),
     releaseDate: date,
@@ -781,11 +1012,11 @@ function blankEntry(base) {
 }
 
 function addEntry(base) {
-  if (find(base.id)) { toast("已经在书架里了"); return find(base.id); }
+  if (find(base.id)) { toast(t("已经在书架里了")); return find(base.id); }
   const e = blankEntry(base);
   DB.entries.push(e);
   save();
-  toast(`已加入书架 · ${e.title}`);
+  toast(t("已加入书架 · {0}", e.title));
   return e;
 }
 
@@ -816,8 +1047,8 @@ function watchedEps(e) {
 }
 function progressPct(e) {
   if (e.mediaType !== "tv") return e.status === "done" ? 1 : 0;
-  const t = totalEps(e);
-  return t ? Math.min(1, watchedEps(e) / t) : 0;
+  const tot = totalEps(e);
+  return tot ? Math.min(1, watchedEps(e) / tot) : 0;
 }
 
 /* ---------------- detail fetch ---------------- */
@@ -903,13 +1134,13 @@ function posterCard(e, opts = {}) {
       ${src
         ? `<img src="${src}" alt="" loading="lazy" decoding="async">`
         : `<span class="ph">${esc(e.title)}</span>`}
-      ${opts.noBadge ? "" : `<span class="badge s-${e.status}">${st.label}</span>`}
+      ${opts.noBadge ? "" : `<span class="badge s-${e.status}">${t(st.label)}</span>`}
       ${e.favorite ? `<span class="fav-dot">★</span>` : ""}
       ${e.tmdbScore ? `<span class="score-pill">${e.tmdbScore.toFixed(1)}</span>` : ""}
       ${showProg ? `<span class="prog"><i style="width:${(pct * 100).toFixed(1)}%"></i></span>` : ""}
     </span>
     <span class="t">${esc(e.title)}</span>
-    <span class="y">${e.year || "—"} · ${e.mediaType === "movie" ? "电影" : "剧集"}</span>
+    <span class="y">${e.year || "—"} · ${t(e.mediaType === "movie" ? "电影" : "剧集")}</span>
   </button>`;
 }
 
@@ -919,12 +1150,12 @@ function listRow(e) {
   const pct = progressPct(e);
   const bits = [
     e.year || "—",
-    e.mediaType === "movie" ? "电影" : "剧集",
-    `<span style="color:${st.color}">${st.label}</span>`,
+    t(e.mediaType === "movie" ? "电影" : "剧集"),
+    `<span style="color:${st.color}">${t(st.label)}</span>`,
   ];
-  if (e.mediaType === "tv" && totalEps(e)) bits.push(`${watchedEps(e)}/${totalEps(e)} 集`);
-  if (e.finishedAt) bits.push(`看完于 ${e.finishedAt}`);
-  if (e.rewatch) bits.push(`重看 ${e.rewatch} 次`);
+  if (e.mediaType === "tv" && totalEps(e)) bits.push(t("{0}/{1} 集", watchedEps(e), totalEps(e)));
+  if (e.finishedAt) bits.push(t("看完于 {0}", e.finishedAt));
+  if (e.rewatch) bits.push(t("重看 {0} 次", e.rewatch));
 
   return `
   <button class="li" data-open="${esc(e.id)}"><span class="li-in">
@@ -996,7 +1227,7 @@ function visibleEntries() {
   const s = PREFS.sort;
   list.sort((a, b) => {
     switch (s) {
-      case "title":    return a.title.localeCompare(b.title, "zh-Hans-CN");
+      case "title":    return a.title.localeCompare(b.title, localeTag());
       case "year":     return (b.year || "0").localeCompare(a.year || "0");
       case "rating":   return (b.tmdbScore || 0) - (a.tmdbScore || 0) || (b.updatedAt - a.updatedAt);
       case "updated":  return b.updatedAt - a.updatedAt;
@@ -1009,7 +1240,7 @@ function visibleEntries() {
 
 function renderFilters() {
   const types = [
-    ["all", "全部"], ["movie", "电影"], ["tv", "剧集"], ["fav", "★ 收藏"],
+    ["all", t("全部")], ["movie", t("电影")], ["tv", t("剧集")], ["fav", t("★ 收藏")],
   ];
   $("#fType").innerHTML = types.map(([v, l]) =>
     `<button class="chip" data-ftype="${v}" aria-pressed="${PREFS.fType === v}">${l}</button>`).join("");
@@ -1019,8 +1250,8 @@ function renderFilters() {
   const forStatus = applyFilters(DB.entries.slice(), "status");
   const counts = {};
   for (const e of forStatus) counts[e.status] = (counts[e.status] || 0) + 1;
-  const stat = [["all", "所有状态", forStatus.length]]
-    .concat(STATUS_ORDER.map(k => [k, STATUS[k].label, counts[k] || 0]));
+  const stat = [["all", t("所有状态"), forStatus.length]]
+    .concat(STATUS_ORDER.map(k => [k, t(STATUS[k].label), counts[k] || 0]));
   $("#fStatus").innerHTML = stat.map(([v, l, c]) =>
     `<button class="chip" data-fstatus="${v}" aria-pressed="${PREFS.fStatus === v}">${l}${c ? ` <span class="faint">${c}</span>` : ""}</button>`).join("");
 
@@ -1045,12 +1276,12 @@ function renderMoreFilters() {
 
   $("#fMore").innerHTML =
     `<select id="selGenre" class="${PREFS.fGenre !== "all" ? "on" : ""}" aria-label="类型">
-       ${opt("all", "所有类型", PREFS.fGenre)}
+       ${opt("all", t("所有类型"), PREFS.fGenre)}
        ${genres.map(([g, c]) => opt(g, `${g} · ${c}`, PREFS.fGenre)).join("")}
      </select>
      <select id="selDecade" class="${PREFS.fDecade !== "all" ? "on" : ""}" aria-label="年代">
-       ${opt("all", "所有年代", PREFS.fDecade)}
-       ${decades.map(d => opt(d, `${d} 年代 · ${dCount[d]}`, PREFS.fDecade)).join("")}
+       ${opt("all", t("所有年代"), PREFS.fDecade)}
+       ${decades.map(d => opt(d, t("{0} 年代 · {1}", d, dCount[d]), PREFS.fDecade)).join("")}
      </select>
     `;
 }
@@ -1071,22 +1302,22 @@ function renderLibrary() {
   const body = $("#libBody");
 
   $("#libCount").innerHTML = DB.entries.length
-    ? `显示 ${list.length} / ${DB.entries.length} 条`
+    ? t("显示 {0} / {1} 条", list.length, DB.entries.length)
       + (anyFilterActive()
-          ? ` · <button id="clearFilters" style="color:var(--accent);font-size:inherit">✕ 清除筛选</button>`
+          ? ` · <button id="clearFilters" style="color:var(--accent);font-size:inherit">${t("✕ 清除筛选")}</button>`
           : "")
     : "";
 
   if (!DB.entries.length) {
     body.innerHTML = `<div class="empty">
       <div class="big">🎞️</div>
-      <div style="font-size:15px;color:var(--dim);margin-bottom:6px">书架还是空的</div>
-      <div class="tiny">去「搜索」加第一部片子${KEY ? "" : "，不过得先在「设置」里填 TMDb key"}</div>
+      <div style="font-size:15px;color:var(--dim);margin-bottom:6px">${t("书架还是空的")}</div>
+      <div class="tiny">${t("去「搜索」加第一部片子")}${KEY ? "" : t("，不过得先在「设置」里填 TMDb key")}</div>
     </div>`;
     return;
   }
   if (!list.length) {
-    body.innerHTML = `<div class="empty"><div class="big">🔍</div><div class="tiny">没有符合条件的条目</div></div>`;
+    body.innerHTML = `<div class="empty"><div class="big">🔍</div><div class="tiny">${t("没有符合条件的条目")}</div></div>`;
     return;
   }
 
@@ -1101,11 +1332,11 @@ function renderLibrary() {
     : `<div class="list">${page.map(listRow).join("")}</div>`)
     + (rest > 0
       ? `<div class="row" style="justify-content:center;gap:11px;margin-top:26px">
-           <button class="btn" data-libmore>加载更多 · 还有 ${rest} 条</button>
-           <button class="btn sm" data-liball>显示全部</button>
+           <button class="btn" data-libmore>${t("加载更多 · 还有 {0} 条", rest)}</button>
+           <button class="btn sm" data-liball>${t("显示全部")}</button>
          </div>`
       : (list.length > step
-          ? `<div class="tiny faint" style="text-align:center;margin-top:26px">已显示全部 ${list.length} 条</div>`
+          ? `<div class="tiny faint" style="text-align:center;margin-top:26px">${t("已显示全部 {0} 条", list.length)}</div>`
           : ""));
 }
 
@@ -1140,8 +1371,8 @@ function resultCard(h) {
     <span class="poster">
       ${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">`
             : `<span class="ph">${esc(h.title)}</span>`}
-      ${owned ? `<span class="badge s-done">已在书架</span>`
-              : `<span class="badge">${h.mediaType === "movie" ? "电影" : "剧集"}</span>`}
+      ${owned ? `<span class="badge s-done">${t("已在书架")}</span>`
+              : `<span class="badge">${t(h.mediaType === "movie" ? "电影" : "剧集")}</span>`}
       ${h.tmdbScore ? `<span class="score-pill">${h.tmdbScore.toFixed(1)}</span>` : ""}
     </span>
     <span class="t">${esc(h.title)}</span>
@@ -1165,7 +1396,7 @@ function personCard(p) {
 function renderBrowseBar() {
   const active = feed.mode === "browse" ? feed.key : null;
   $("#browseBar").innerHTML = BROWSE.map(b =>
-    `<button class="chip" data-browse="${b.key}" aria-pressed="${active === b.key}">${b.label}</button>`).join("");
+    `<button class="chip" data-browse="${b.key}" aria-pressed="${active === b.key}">${t(b.label)}</button>`).join("");
 }
 
 function renderFeed() {
@@ -1173,7 +1404,7 @@ function renderFeed() {
   renderBrowseBar();
 
   const people = (feed.mode === "search" && feed.people.length)
-    ? `<div class="sec-title" style="margin-bottom:9px">演职人员</div>
+    ? `<div class="sec-title" style="margin-bottom:9px">${t("演职人员")}</div>
        <div class="people">${feed.people.map(personCard).join("")}</div>` : "";
 
   const head = (feed.mode === "person" && feed.person)
@@ -1183,16 +1414,16 @@ function renderFeed() {
             : `<div class="av"></div>`}
          <div style="flex:1;min-width:0">
            <div class="nm">${esc(feed.person.name)}</div>
-           <div class="tiny faint">${feed.hits.length} 部参演作品</div>
+           <div class="tiny faint">${t("{0} 部参演作品", feed.hits.length)}</div>
          </div>
-         <button class="btn sm" data-backsearch>← 返回搜索</button>
+         <button class="btn sm" data-backsearch>${t("← 返回搜索")}</button>
        </div>` : "";
 
   if (!feed.hits.length) {
     body.innerHTML = head + people + (feed.mode === "search"
-      ? `<div class="empty"><div class="big">🤷</div><div class="tiny">没有片名匹配「${esc(feed.q)}」${
-           feed.people.length ? "，试试上面的演职人员" : ""}</div></div>`
-      : `<div class="empty"><div class="big">📭</div><div class="tiny">这个榜单暂时没有内容</div></div>`);
+      ? `<div class="empty"><div class="big">🤷</div><div class="tiny">${t("没有片名匹配「{0}」", esc(feed.q))}${
+           feed.people.length ? t("，试试上面的演职人员") : ""}</div></div>`
+      : `<div class="empty"><div class="big">📭</div><div class="tiny">${t("这个榜单暂时没有内容")}</div></div>`);
     return;
   }
   const cols  = gridCols(body);
@@ -1205,9 +1436,9 @@ function renderFeed() {
     `<div class="grid">${shown.map(resultCard).join("")}</div>` +
     (hasHidden || canFetch
       ? `<div style="text-align:center;margin-top:26px">
-           <button class="btn" id="moreBtn">加载更多</button>
+           <button class="btn" id="moreBtn">${t("加载更多")}</button>
          </div>`
-      : `<div class="tiny faint" style="text-align:center;margin-top:26px">没有更多了</div>`);
+      : `<div class="tiny faint" style="text-align:center;margin-top:26px">${t("没有更多了")}</div>`);
   body._hits = feed.hits;
 }
 
@@ -1218,8 +1449,8 @@ async function loadFeed(reset = false) {
     renderBrowseBar();
     body.innerHTML = `<div class="empty">
       <div class="big">🔑</div>
-      <div style="font-size:15px;color:var(--dim);margin-bottom:6px">还没有 TMDb key</div>
-      <div class="tiny">去「设置」里填一个，搜索和榜单才能用</div>
+      <div style="font-size:15px;color:var(--dim);margin-bottom:6px">${t("还没有 TMDb key")}</div>
+      <div class="tiny">${t("去「设置」里填一个，搜索和榜单才能用")}</div>
     </div>`;
     return;
   }
@@ -1231,10 +1462,10 @@ async function loadFeed(reset = false) {
     feed.page = 1; feed.hits = []; feed.totalPages = 1; feed.rows = FEED_ROWS;
     if (feed.mode !== "search") feed.people = [];
     renderBrowseBar();
-    body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; 加载中…</div>`;
+    body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; ${t("加载中…")}</div>`;
   } else {
     const b = $("#moreBtn");
-    if (b) { b.disabled = true; b.innerHTML = `<span class="spinner"></span> 加载中…`; }
+    if (b) { b.disabled = true; b.innerHTML = `<span class="spinner"></span> ${t("加载中…")}`; }
   }
 
   try {
@@ -1294,9 +1525,9 @@ async function loadFeed(reset = false) {
     if (seq !== searchSeq) return;
     renderBrowseBar();
     body.innerHTML = `<div class="empty"><div class="big">⚠️</div><div class="tiny">${
-      err.message === "BAD_KEY" ? "API key 无效 —— 去设置里检查一下"
-      : err.message === "NO_KEY" ? "还没填 API key"
-      : "请求失败：" + esc(err.message)}</div></div>`;
+      err.message === "BAD_KEY" ? t("API key 无效 —— 去设置里检查一下")
+      : err.message === "NO_KEY" ? t("还没填 API key")
+      : t("请求失败：{0}", esc(err.message))}</div></div>`;
   } finally {
     feed.loading = false;
   }
@@ -1363,25 +1594,25 @@ const randPage = n => 1 + Math.floor(Math.random() * n);
 /** Several independent probes, so the deck doesn't turn into one long genre. */
 async function candidateQueries() {
   const ids = await loadGenreIds();
-  const t = tasteProfile();
-  const gid = t.genres.map(n => ids[n]).filter(Boolean);
+  const taste = tasteProfile();
+  const gid = taste.genres.map(n => ids[n]).filter(Boolean);
   const out = [];
 
   if (gid.length) {
-    out.push({ why: `你常看${t.genres[0]}`, path: "/discover/movie", params: {
+    out.push({ why: t("你常看{0}", taste.genres[0]), path: "/discover/movie", params: {
       with_genres: gid.slice(0, 2).join("|"), "vote_count.gte": 300,
       sort_by: "popularity.desc", page: randPage(5) } });
-    out.push({ why: `${t.genres[1] || t.genres[0]}高口碑`, path: "/discover/movie", params: {
+    out.push({ why: t("{0}高口碑", taste.genres[1] || taste.genres[0]), path: "/discover/movie", params: {
       with_genres: gid.slice(1, 4).join("|"), "vote_count.gte": 500,
       sort_by: "vote_average.desc", page: randPage(3) } });
-    out.push({ why: `${t.genres[0]}剧集`, path: "/discover/tv", params: {
+    out.push({ why: t("{0}剧集", taste.genres[0]), path: "/discover/tv", params: {
       with_genres: gid.slice(0, 3).join("|"), "vote_count.gte": 150,
       sort_by: "popularity.desc", page: randPage(3) } });
   }
 
-  const dec = t.decades[0];
+  const dec = taste.decades[0];
   if (dec) {
-    out.push({ why: `${dec} 年代`, path: "/discover/movie", params: {
+    out.push({ why: t("{0} 年代", dec), path: "/discover/movie", params: {
       "primary_release_date.gte": `${dec}-01-01`,
       "primary_release_date.lte": `${+dec + 9}-12-31`,
       "vote_count.gte": 400, sort_by: "popularity.desc", page: randPage(4) } });
@@ -1390,17 +1621,17 @@ async function candidateQueries() {
   // The films someone is likeliest to have seen are the ones from when they were 12-25.
   const by = parseInt(PREFS.birthYear, 10);
   if (by > 1900 && by < 2020) {
-    out.push({ why: `你 12–25 岁时的片子`, path: "/discover/movie", params: {
+    out.push({ why: t("你 12–25 岁时的片子"), path: "/discover/movie", params: {
       "primary_release_date.gte": `${by + 12}-01-01`,
       "primary_release_date.lte": `${by + 25}-12-31`,
       "vote_count.gte": 300, sort_by: "popularity.desc", page: randPage(5) } });
   }
 
   if (PREFS.homeLang) {
-    out.push({ why: "你的母语电影", path: "/discover/movie", params: {
+    out.push({ why: t("你的母语电影"), path: "/discover/movie", params: {
       with_original_language: PREFS.homeLang, "vote_count.gte": 80,
       sort_by: "vote_average.desc", page: randPage(4) } });
-    out.push({ why: "你的母语剧集", path: "/discover/tv", params: {
+    out.push({ why: t("你的母语剧集"), path: "/discover/tv", params: {
       with_original_language: PREFS.homeLang, "vote_count.gte": 40,
       sort_by: "popularity.desc", page: randPage(2) } });
   }
@@ -1408,7 +1639,7 @@ async function candidateQueries() {
   // "Because you watched X" — the single most direct signal available.
   const seeds = shuffle(DB.entries.filter(e => e.favorite || e.status === "done")).slice(0, 3);
   for (const sd of seeds) {
-    out.push({ why: `因为你看过《${sd.title}》`, path: `/${sd.mediaType}/${sd.tmdbId}/recommendations`,
+    out.push({ why: t("因为你看过《{0}》", sd.title), path: `/${sd.mediaType}/${sd.tmdbId}/recommendations`,
                params: { page: 1 }, forced: sd.mediaType });
   }
   return shuffle(out);
@@ -1465,13 +1696,13 @@ function deckCardHTML(c, top) {
     ${src ? `<img src="${src}" alt="" draggable="false">` : ""}
     <div class="veil"></div>
     ${c.why ? `<span class="why">${esc(c.why)}</span>` : ""}
-    <span class="stamp yes">看过</span>
-    <span class="stamp no">没看过</span>
+    <span class="stamp yes">${t("看过")}</span>
+    <span class="stamp no">${t("没看过")}</span>
     <div class="meta">
       <h3>${esc(c.title)}</h3>
       <div class="sub">
         <span>${c.year || "—"}</span>
-        <span>${c.mediaType === "movie" ? "电影" : "剧集"}</span>
+        <span>${t(c.mediaType === "movie" ? "电影" : "剧集")}</span>
         ${c.tmdbScore ? `<span>TMDb ${c.tmdbScore.toFixed(1)}</span>` : ""}
       </div>
       ${c.overview ? `<div class="ov">${esc(c.overview)}</div>` : ""}
@@ -1484,24 +1715,24 @@ function renderDeck() {
 
   if (!KEY) {
     body.innerHTML = `<div class="empty"><div class="big">🔑</div>
-      <div class="tiny">先去「设置」填 TMDb key</div></div>`;
+      <div class="tiny">${t("先去「设置」填 TMDb key")}</div></div>`;
     return;
   }
   if (!DB.entries.length) {
     body.innerHTML = `<div class="empty"><div class="big">🎬</div>
-      <div style="font-size:15px;color:var(--dim);margin-bottom:6px">书架还是空的</div>
-      <div class="tiny">推荐是从你看过的东西里推出来的，先记几部再回来</div></div>`;
+      <div style="font-size:15px;color:var(--dim);margin-bottom:6px">${t("书架还是空的")}</div>
+      <div class="tiny">${t("推荐是从你看过的东西里推出来的，先记几部再回来")}</div></div>`;
     return;
   }
   if (deck.loading && deck.i >= deck.cards.length) {
-    body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; 正在挑片…</div>`;
+    body.innerHTML = `<div class="empty"><span class="spinner"></span>&nbsp; ${t("正在挑片…")}</div>`;
     return;
   }
   if (deck.i >= deck.cards.length) {
     body.innerHTML = `<div class="empty">
       <div class="big">🎞️</div>
-      <div style="font-size:15px;color:var(--dim);margin-bottom:10px">这一轮划完了</div>
-      <button class="btn primary" data-deckmore>再来一批</button>
+      <div style="font-size:15px;color:var(--dim);margin-bottom:10px">${t("这一轮划完了")}</div>
+      <button class="btn primary" data-deckmore>${t("再来一批")}</button>
     </div>`;
     return;
   }
@@ -1514,14 +1745,14 @@ function renderDeck() {
         ${stack.map((c, n) => deckCardHTML(c, n === stack.length - 1)).join("")}
       </div>
       <div class="deck-actions">
-        <button class="deck-btn no"   data-swipe="no"   title="没看过">✕</button>
-        <button class="deck-btn sm undo" data-swipe="undo" title="撤销上一张"${deck.history.length ? "" : " disabled"}>↶</button>
-        <button class="deck-btn sm want" data-swipe="want" title="想看">＋</button>
-        <button class="deck-btn yes"  data-swipe="yes"  title="看过">✓</button>
+        <button class="deck-btn no"   data-swipe="no"   title="${t("没看过")}">✕</button>
+        <button class="deck-btn sm undo" data-swipe="undo" title="${t("撤销上一张")}"${deck.history.length ? "" : " disabled"}>↶</button>
+        <button class="deck-btn sm want" data-swipe="want" title="${t("想看")}">＋</button>
+        <button class="deck-btn yes"  data-swipe="yes"  title="${t("看过")}">✓</button>
       </div>
       <div class="deck-hint">
-        左划 = 没看过 · 右划 = 看过 · ＋ 加入想看<br>
-        还剩 ${deck.cards.length - deck.i} 张
+        ${t("左划 = 没看过 · 右划 = 看过 · ＋ 加入想看")}<br>
+        ${t("还剩 {0} 张", deck.cards.length - deck.i)}
       </div>
     </div>`;
   bindTopCard();
@@ -1637,10 +1868,10 @@ function isDraft() {
 function commitDraft() {
   if (!isDraft()) return false;
   DB.entries.push(draft);
-  const t = draft.title;
+  const title = draft.title;
   draft = null;
   save();
-  toast(`已加入书架 · ${t}`);
+  toast(t("已加入书架 · {0}", title));
   return true;
 }
 
@@ -1656,11 +1887,11 @@ function allRegularWatched(e) {
 
 function seasonsBlock(e) {
   if (e.mediaType !== "tv" || !e.seasonsMeta || !e.seasonsMeta.length) return "";
-  const t = totalEps(e), w = watchedEps(e);
+  const tot = totalEps(e), w = watchedEps(e);
 
   return `
   <div class="blk">
-    <div class="sec-title">分季进度 ${t ? `· ${w}/${t} 集 (${Math.round(w / t * 100)}%)` : ""}</div>
+    <div class="sec-title">${t("分季进度")}${tot ? ` · ${w}/${tot} ${t("集")} (${Math.round(w / tot * 100)}%)` : ""}</div>
     ${e.seasonsMeta.filter(s => s.count > 0).map(s => {
       const seen = (e.progress[s.n] || []).length;
       const pct  = s.count ? seen / s.count : 0;
@@ -1668,12 +1899,12 @@ function seasonsBlock(e) {
       <details class="season" data-season="${s.n}">
         <summary>
           <span class="caret">▶</span>
-          <span class="sname">${esc(s.name || (s.n === 0 ? "特别篇" : "第 " + s.n + " 季"))}</span>
+          <span class="sname">${esc(s.name || (s.n === 0 ? t("特别篇") : t("第 {0} 季", s.n)))}</span>
           <span class="bar"><i style="width:${(pct * 100).toFixed(0)}%"></i></span>
           <span class="scount">${seen}/${s.count}</span>
         </summary>
         <div class="eps" data-eps="${s.n}">
-          <div class="tiny faint" style="padding:10px 4px">展开加载剧集…</div>
+          <div class="tiny faint" style="padding:10px 4px">${t("展开加载剧集…")}</div>
         </div>
       </details>`;
     }).join("")}
@@ -1695,7 +1926,7 @@ function castBlock(e) {
   if (!cast || !cast.length) return "";
   return `
   <div class="blk">
-    <div class="sec-title">主要演员</div>
+    <div class="sec-title">${t("主要演员")}</div>
     <div class="people">
       ${cast.map(p => `
         <button class="person" data-cast="${p.id}" data-castname="${esc(p.name)}"
@@ -1715,18 +1946,18 @@ function sheetHTML(e) {
   const post = IMG(e.poster, "w500");
   const sub  = [];
   if (e.year) sub.push(e.year);
-  sub.push(e.mediaType === "movie" ? "电影" : "剧集");
+  sub.push(t(e.mediaType === "movie" ? "电影" : "剧集"));
   if (e.mediaType === "movie" && e.runtime) sub.push(mins(e.runtime));
   if (e.mediaType === "tv" && e.seasonsMeta) {
     const ss = e.seasonsMeta.filter(s => s.n > 0).length;
-    sub.push(`${ss} 季 · ${totalEps(e)} 集`);
+    sub.push(t("{0} 季 · {1} 集", ss, totalEps(e)));
   }
   if (e.tmdbScore) sub.push(`TMDb ${e.tmdbScore.toFixed(1)}`);
 
   return `
   <div class="hero">
     ${back ? `<img src="${back}" alt="">` : ""}
-    <button class="close" data-close aria-label="关闭">×</button>
+    <button class="close" data-close aria-label="${t("关闭")}">×</button>
   </div>
   <div class="sheet-body">
     <div class="head">
@@ -1744,37 +1975,37 @@ function sheetHTML(e) {
     ${overviewBlock(e)}
 
     <div class="blk">
-      <div class="sec-title">我的记录</div>
+      <div class="sec-title">${t("我的记录")}</div>
       ${isDraft() ? `<div class="tiny" style="margin:-4px 0 13px;padding:9px 13px;border-radius:10px;
         background:var(--accent-soft);border:1px solid var(--accent);color:var(--dim)">
-        还没加入书架 —— 选一个状态（或收藏、勾选剧集）即可加入
+        ${t("还没加入书架 —— 选一个状态（或收藏、勾选剧集）即可加入")}
       </div>` : ""}
       <div class="row" style="margin-bottom:16px">
         ${STATUS_ORDER.map(k =>
           // nothing is pre-selected while previewing — the default "plan" would read
           // as a choice the user never made
-          `<button class="chip" data-status="${k}" aria-pressed="${!isDraft() && e.status === k}">${STATUS[k].label}</button>`).join("")}
-        <button class="chip" data-fav aria-pressed="${e.favorite}">${e.favorite ? "★ 已收藏" : "☆ 收藏"}</button>
+          `<button class="chip" data-status="${k}" aria-pressed="${!isDraft() && e.status === k}">${t(STATUS[k].label)}</button>`).join("")}
+        <button class="chip" data-fav aria-pressed="${e.favorite}">${t(e.favorite ? "★ 已收藏" : "☆ 收藏")}</button>
       </div>
 
       <div class="form-grid" style="margin-bottom:16px">
         <div>
-          <label class="lb" for="dStart">开始日期</label>
+          <label class="lb" for="dStart">${t("开始日期")}</label>
           <input class="field" type="date" id="dStart" value="${e.startedAt || ""}">
         </div>
         <div>
-          <label class="lb" for="dFin">看完日期</label>
+          <label class="lb" for="dFin">${t("看完日期")}</label>
           <input class="field" type="date" id="dFin" value="${e.finishedAt || ""}">
         </div>
         <div>
-          <label class="lb" for="dRew">重看次数</label>
+          <label class="lb" for="dRew">${t("重看次数")}</label>
           <input class="field" type="number" id="dRew" min="0" max="99" value="${e.rewatch || 0}">
         </div>
       </div>
 
       <div>
-        <label class="lb" for="dNotes">短评 / 笔记</label>
-        <textarea class="field" id="dNotes" placeholder="随便写点什么…">${esc(e.notes)}</textarea>
+        <label class="lb" for="dNotes">${t("短评 / 笔记")}</label>
+        <textarea class="field" id="dNotes" placeholder="${t("随便写点什么…")}">${esc(e.notes)}</textarea>
       </div>
     </div>
 
@@ -1782,17 +2013,17 @@ function sheetHTML(e) {
 
     <div class="blk row" style="justify-content:space-between">
       <div class="row">
-        <button class="btn sm" data-refresh>刷新元数据</button>
-        <a class="btn sm" href="https://www.themoviedb.org/${e.mediaType}/${e.tmdbId}" target="_blank" rel="noopener" style="color:inherit">TMDb 页面 ↗</a>
+        <button class="btn sm" data-refresh>${t("刷新元数据")}</button>
+        <a class="btn sm" href="https://www.themoviedb.org/${e.mediaType}/${e.tmdbId}" target="_blank" rel="noopener" style="color:inherit">${t("TMDb 页面 ↗")}</a>
         ${regularSeasons(e).length
           ? `<button class="btn sm" data-markall="${allRegularWatched(e) ? "0" : "1"}">${
-               allRegularWatched(e) ? "取消所有正季" : "所有正季标记已看"}</button>`
+               t(allRegularWatched(e) ? "取消所有正季" : "所有正季标记已看")}</button>`
           : ""}
       </div>
-      ${isDraft() ? "" : `<button class="btn sm danger" data-del>从书架移除</button>`}
+      ${isDraft() ? "" : `<button class="btn sm danger" data-del>${t("从书架移除")}</button>`}
     </div>
     ${isDraft() ? "" : `<div class="tiny faint" style="margin-top:14px">
-      添加于 ${ymd(e.addedAt)} · 更新于 ${ymd(e.updatedAt)}
+      ${t("添加于 {0} · 更新于 {1}", ymd(e.addedAt), ymd(e.updatedAt))}
     </div>`}
   </div>`;
 }
@@ -1858,16 +2089,16 @@ async function loadEpisodes(e, n, host) {
       <label class="ep ${seen.has(ep.episode_number) ? "seen" : ""}" data-ep="${ep.episode_number}">
         <input type="checkbox" ${seen.has(ep.episode_number) ? "checked" : ""}>
         <span>
-          <span class="en">${ep.episode_number}. ${esc(ep.name || "第 " + ep.episode_number + " 集")}</span>
+          <span class="en">${ep.episode_number}. ${esc(ep.name || t("第 {0} 集", ep.episode_number))}</span>
           ${ep.air_date ? `<span class="ed">${ep.air_date}</span>` : ""}
         </span>
       </label>`).join("")
       + `<div class="ep-tools">
-           <button class="btn sm" data-allseason="${n}">全部标记已看</button>
-           <button class="btn sm" data-noneseason="${n}">全部取消</button>
+           <button class="btn sm" data-allseason="${n}">${t("全部标记已看")}</button>
+           <button class="btn sm" data-noneseason="${n}">${t("全部取消")}</button>
          </div>`;
   } catch (err) {
-    host.innerHTML = `<div class="tiny faint" style="padding:10px 4px">加载失败：${esc(err.message)}</div>`;
+    host.innerHTML = `<div class="tiny faint" style="padding:10px 4px">${t("加载失败：{0}", esc(err.message))}</div>`;
   }
 }
 
@@ -1882,8 +2113,8 @@ function toggleEp(e, season, ep, on) {
     e.status = "watching";
     if (!e.startedAt) e.startedAt = ymd(Date.now());
   }
-  const t = totalEps(e);
-  if (t && watchedEps(e) >= t && e.status === "watching") {
+  const tot = totalEps(e);
+  if (tot && watchedEps(e) >= tot && e.status === "watching") {
     e.status = "done";
     if (!e.finishedAt) e.finishedAt = ymd(Date.now());
   }
@@ -1896,8 +2127,8 @@ function setSeasonAll(e, n, on) {
   if (on) e.progress[n] = Array.from({ length: meta.count }, (_, i) => i + 1);
   else delete e.progress[n];
 
-  const t = totalEps(e);
-  if (t && watchedEps(e) >= t && e.status !== "done") {
+  const tot = totalEps(e);
+  if (tot && watchedEps(e) >= tot && e.status !== "done") {
     e.status = "done";
     if (!e.finishedAt) e.finishedAt = ymd(Date.now());
   } else if (watchedEps(e) > 0 && e.status === "plan") {
@@ -1915,7 +2146,7 @@ function renderStats() {
   const es = DB.entries;
   const host = $("#statsBody");
   if (!es.length) {
-    host.innerHTML = `<div class="empty"><div class="big">📊</div><div class="tiny">书架为空，先记几部再来看</div></div>`;
+    host.innerHTML = `<div class="empty"><div class="big">📊</div><div class="tiny">${t("书架为空，先记几部再来看")}</div></div>`;
     return;
   }
 
@@ -1943,13 +2174,13 @@ function renderStats() {
   const maxDec  = Math.max(1, ...Object.values(byDecade));
 
   const stats = [
-    [es.length, "总条目"],
-    [done.length, "已看完"],
-    [movies.length, "电影"],
-    [shows.length, "剧集"],
-    [eps.toLocaleString(), "看过的集数"],
-    [hours ? hours.toLocaleString() : "—", "累计小时"],
-    [favs.length, "收藏"],
+    [es.length, t("总条目")],
+    [done.length, t("已看完")],
+    [movies.length, t("电影")],
+    [shows.length, t("剧集")],
+    [eps.toLocaleString(), t("看过的集数")],
+    [hours ? hours.toLocaleString() : "—", t("累计小时")],
+    [favs.length, t("收藏")],
   ];
 
   // finished-per-year histogram
@@ -1985,10 +2216,10 @@ function renderStats() {
 
     ${years.length ? `
     <div class="blk" style="margin-top:0">
-      <div class="sec-title">每年看完</div>
+      <div class="sec-title">${t("每年看完")}</div>
       <div class="chart">
         ${years.map(y => `
-          <div class="col" title="${y}：${byYear[y]} 部">
+          <div class="col" title="${t("{0}：{1} 部", y, byYear[y])}">
             <span class="cnt">${byYear[y]}</span>
             <div class="bar2" style="height:${byYear[y] / maxY * 100}%"></div>
             <span class="lab">${y}</span>
@@ -1998,10 +2229,10 @@ function renderStats() {
 
     ${scored.length ? `
     <div class="blk">
-      <div class="sec-title">书架的 TMDb 评分分布 · 均分 ${avgScore.toFixed(2)}</div>
+      <div class="sec-title">${t("书架的 TMDb 评分分布 · 均分 {0}", avgScore.toFixed(2))}</div>
       <div class="chart">
         ${dist.map((c, i) => `
-          <div class="col" title="${i}–${i + 1} 分：${c} 部">
+          <div class="col" title="${t("{0}–{1} 分：{2} 部", i, i + 1, c)}">
             <span class="cnt">${c || ""}</span>
             <div class="bar2" style="height:${c / maxD * 100}%;${c ? "" : "opacity:.2"}"></div>
             <span class="lab">${i + 1}</span>
@@ -2011,10 +2242,10 @@ function renderStats() {
 
     ${decades.length > 1 ? `
     <div class="blk">
-      <div class="sec-title">看的片子出自哪些年代</div>
+      <div class="sec-title">${t("看的片子出自哪些年代")}</div>
       <div class="chart">
         ${decades.map(d => `
-          <div class="col" title="${d} 年代：${byDecade[d]} 部">
+          <div class="col" title="${t("{0} 年代：{1} 部", d, byDecade[d])}">
             <span class="cnt">${byDecade[d]}</span>
             <div class="bar2" style="height:${byDecade[d] / maxDec * 100}%"></div>
             <span class="lab">${d.slice(2)}s</span>
@@ -2024,14 +2255,14 @@ function renderStats() {
 
     ${topGenres.length ? `
     <div class="blk">
-      <div class="sec-title">常看类型</div>
+      <div class="sec-title">${t("常看类型")}</div>
       <div class="genres">${topGenres.map(([g, c]) =>
         `<span>${esc(g)} <b style="color:var(--accent)">${c}</b></span>`).join("")}</div>
     </div>` : ""}
 
     ${recent.length ? `
     <div class="blk">
-      <div class="sec-title">最近看完</div>
+      <div class="sec-title">${t("最近看完")}</div>
       <div class="grid">${recent.map(e => posterCard(e, { noBadge: true })).join("")}</div>
     </div>` : ""}
   `;
@@ -2064,7 +2295,7 @@ function exportJSON() {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast(`已导出 ${DB.entries.length} 条`);
+  toast(t("已导出 {0} 条", DB.entries.length));
 }
 
 /** Three-way merge of a remote/imported payload into DB.
@@ -2105,13 +2336,13 @@ function pruneTombstones() {
 function importJSON(text) {
   let p;
   try { p = JSON.parse(text); }
-  catch { toast("不是合法的 JSON 文件"); return; }
-  if (!p || !Array.isArray(p.entries)) { toast("文件里没有 entries 字段"); return; }
+  catch { toast(t("不是合法的 JSON 文件")); return; }
+  if (!p || !Array.isArray(p.entries)) { toast(t("文件里没有 entries 字段")); return; }
 
   const r = mergeRemote(p);
   save();
   renderLibrary();
-  toast(`导入完成 · 新增 ${r.added}，更新 ${r.updated}${r.removed ? `，删除 ${r.removed}` : ""}`);
+  toast(t("导入完成 · 新增 {0}，更新 {1}", r.added, r.updated) + (r.removed ? t("，删除 {0}", r.removed) : ""));
 }
 
 /* ============================================================
@@ -2155,7 +2386,7 @@ async function ghCreateGist() {
   const d = await ghApi("/gists", {
     method: "POST",
     body: JSON.stringify({
-      description: "片柜 Shelf — 影视记录数据（由网页自动同步，请勿手动编辑）",
+      description: t("片柜 Shelf — 影视记录数据（由网页自动同步，请勿手动编辑）"),
       public: false,
       files: { [GIST_FILE]: { content: payloadString() } },
     }),
@@ -2183,12 +2414,12 @@ async function ghPush() {
 
 function syncErr(err) {
   return ({
-    NO_TOKEN:  "还没填 GitHub Token",
-    BAD_TOKEN: "Token 无效或已过期",
-    NO_SCOPE:  "Token 缺少 gist 权限",
-    NOT_FOUND: "找不到这个 Gist（ID 错了，或 Token 不是同一个账号的）",
-    NO_FILE:   `Gist 里没有 ${GIST_FILE}`,
-  })[err.message] || ("同步失败：" + err.message);
+    NO_TOKEN:  t("还没填 GitHub Token"),
+    BAD_TOKEN: t("Token 无效或已过期"),
+    NO_SCOPE:  t("Token 缺少 gist 权限"),
+    NOT_FOUND: t("找不到这个 Gist（ID 错了，或 Token 不是同一个账号的）"),
+    NO_FILE:   t("Gist 里没有 {0}", GIST_FILE),
+  })[err.message] || t("同步失败：{0}", err.message);
 }
 
 let syncing = false, syncTimer = null, lastAutoPull = 0;
@@ -2202,20 +2433,20 @@ function setSyncUI(state, note) {
 
   const m = $("#ghMsg");
   if (!m) return;
-  if (state === "syncing") { m.innerHTML = `<span class="spinner"></span> 同步中…`; m.style.color = "var(--dim)"; }
+  if (state === "syncing") { m.innerHTML = `<span class="spinner"></span> ${t("同步中…")}`; m.style.color = "var(--dim)"; }
   else if (state === "ok") {
-    m.textContent = `✓ ${note || "已同步"} · ${new Date(GH.lastSync).toLocaleString("zh-CN")}`;
+    m.textContent = `✓ ${note || t("已同步")} · ${new Date(GH.lastSync).toLocaleString(localeTag())}`;
     m.style.color = "var(--green)";
   } else if (state === "err") { m.textContent = "✕ " + note; m.style.color = "var(--red)"; }
   else if (GH.lastSync) {
-    m.textContent = `上次同步 ${new Date(GH.lastSync).toLocaleString("zh-CN")}`;
+    m.textContent = t("上次同步 {0}", new Date(GH.lastSync).toLocaleString(localeTag()));
     m.style.color = "var(--faint)";
   } else { m.textContent = ""; }
 }
 
 async function syncNow(opts = {}) {
   if (!GH.token || !GH.gist) {
-    if (!opts.silent) toast("先填好 Token 和 Gist ID");
+    if (!opts.silent) toast(t("先填好 Token 和 Gist ID"));
     return;
   }
   if (syncing) return;
@@ -2237,11 +2468,11 @@ async function syncNow(opts = {}) {
     try { localStorage.setItem(LS_DATA, JSON.stringify(DB)); } catch (e) {}
 
     const changed = r.added + r.updated + r.removed;
-    setSyncUI("ok", changed ? `拉回 ${r.added} 新增 / ${r.updated} 更新 / ${r.removed} 删除` : "已是最新");
+    setSyncUI("ok", changed ? t("拉回 {0} 新增 / {1} 更新 / {2} 删除", r.added, r.updated, r.removed) : t("已是最新"));
     renderLibrary();
     if (page === "stats") renderStats();
-    if (!opts.silent) toast(changed ? `同步完成 · 合并了 ${changed} 处改动` : "同步完成 · 已是最新");
-    else if (changed) toast(`已从云端合并 ${changed} 处改动`);
+    if (!opts.silent) toast(changed ? t("同步完成 · 合并了 {0} 处改动", changed) : t("同步完成 · 已是最新"));
+    else if (changed) toast(t("已从云端合并 {0} 处改动", changed));
   } catch (err) {
     setSyncUI("err", syncErr(err));
     if (!opts.silent) toast(syncErr(err));
@@ -2359,12 +2590,7 @@ function wire() {
     const v = ev.target.value.trim();
     searchDebounce = setTimeout(() => v ? showSearch(v) : showBrowse(), 380);
   });
-  $("#tmLang").addEventListener("change", ev => {
-    PREFS.lang = ev.target.value; savePrefs();
-    $("#setLang").value = PREFS.lang;
-    seasonCache.clear();
-    feed.mode === "search" ? showSearch(feed.q) : showBrowse();
-  });
+  $("#tmLang").addEventListener("change", ev => setLanguage(ev.target.value));
   $("#browseBar").addEventListener("click", ev => {
     const c = ev.target.closest("[data-browse]");
     if (c) showBrowse(c.dataset.browse);
@@ -2439,24 +2665,24 @@ function wire() {
 
     if (ev.target.closest("[data-refresh]")) {
       const btn = ev.target.closest("[data-refresh]");
-      btn.disabled = true; btn.textContent = "刷新中…";
+      btn.disabled = true; btn.textContent = t("刷新中…");
       try {
         seasonCache.clear();
         await ensureDetail(e, true);
         refreshSheet();
-        toast("元数据已更新");
+        toast(t("元数据已更新"));
       } catch (err) {
-        toast(err.message === "NO_KEY" ? "先去设置里填 API key" : "刷新失败：" + err.message);
-        btn.disabled = false; btn.textContent = "刷新元数据";
+        toast(err.message === "NO_KEY" ? t("先去设置里填 API key") : t("刷新失败：{0}", err.message));
+        btn.disabled = false; btn.textContent = t("刷新元数据");
       }
       return;
     }
 
     if (ev.target.closest("[data-del]")) {
-      if (!confirm(`确定把《${e.title}》从书架移除？此操作不可撤销。`)) return;
+      if (!confirm(t("确定把《{0}》从书架移除？此操作不可撤销。", e.title))) return;
       removeEntry(e.id);
       closeSheet();
-      toast("已移除");
+      toast(t("已移除"));
       return;
     }
 
@@ -2474,7 +2700,7 @@ function wire() {
       }
       refreshSheet(); reopenSeasons(e, open);
       const n = regularSeasons(e).reduce((a, s) => a + s.count, 0);
-      toast(on ? `已标记 ${regularSeasons(e).length} 季 · ${n} 集` : "已取消所有正季");
+      toast(on ? t("已标记 {0} 季 · {1} 集", regularSeasons(e).length, n) : t("已取消所有正季"));
       return;
     }
 
@@ -2534,7 +2760,7 @@ function wire() {
     const host = $("[data-eps]", det);
     if (!e || !host || host.dataset.loaded) return;
     host.dataset.loaded = "1";
-    host.innerHTML = `<div class="tiny faint" style="padding:10px 4px"><span class="spinner"></span> 加载中…</div>`;
+    host.innerHTML = `<div class="tiny faint" style="padding:10px 4px"><span class="spinner"></span> ${t("加载中…")}</div>`;
     loadEpisodes(e, Number(det.dataset.season), host);
   }, true);
 
@@ -2542,7 +2768,7 @@ function wire() {
   $("#keySave").addEventListener("click", async () => {
     const v = $("#keyIn").value.trim();
     const msg = $("#keyMsg");
-    if (!v) { msg.textContent = "先粘贴一个 key"; msg.style.color = "var(--red)"; return; }
+    if (!v) { msg.textContent = t("先粘贴一个 key"); msg.style.color = "var(--red)"; return; }
     msg.innerHTML = `<span class="spinner"></span> 测试中…`;
     msg.style.color = "var(--dim)";
     const prev = KEY;
@@ -2550,40 +2776,35 @@ function wire() {
     try {
       await tmdb("/configuration");
       localStorage.setItem(LS_KEY, v);
-      msg.textContent = "✓ 有效，已保存到本机";
+      msg.textContent = t("✓ 有效，已保存到本机");
       msg.style.color = "var(--green)";
       renderLibrary();
     } catch (err) {
       KEY = prev;
-      msg.textContent = err.message === "BAD_KEY" ? "✕ key 无效" : "✕ " + err.message;
+      msg.textContent = err.message === "BAD_KEY" ? t("✕ key 无效") : "✕ " + err.message;
       msg.style.color = "var(--red)";
     }
   });
   $("#keyShow").addEventListener("click", () => {
     const i = $("#keyIn");
     i.type = i.type === "password" ? "text" : "password";
-    $("#keyShow").textContent = i.type === "password" ? "显示" : "隐藏";
+    $("#keyShow").textContent = t(i.type === "password" ? "显示" : "隐藏");
   });
   $("#setRegion").addEventListener("change", ev => {
     PREFS.region = ev.target.value; savePrefs();
     const cat = BROWSE.find(b => b.key === feed.key);
     if (feed.mode === "browse" && cat && cat.region) loadFeed(true);
-    toast(ev.target.value ? "院线地区已切换" : "已取消地区限定");
+    toast(t(ev.target.value ? "院线地区已切换" : "已取消地区限定"));
   });
-  $("#setLang").addEventListener("change", ev => {
-    PREFS.lang = ev.target.value; savePrefs();
-    $("#tmLang").value = PREFS.lang;
-    seasonCache.clear();
-    toast("语言已切换，重新打开条目并「刷新元数据」即可更新已有标题");
-  });
+  $("#setLang").addEventListener("change", ev => setLanguage(ev.target.value));
 
   /** "看完" should mean every regular season is done. Imported data (and shows that
    *  gained seasons since) can drift out of that. */
   function staleDone() {
     return DB.entries.filter(e => {
       if (e.mediaType !== "tv" || e.status !== "done") return false;
-      const t = totalEps(e);
-      return t > 0 && watchedEps(e) < t;
+      const tot = totalEps(e);
+      return tot > 0 && watchedEps(e) < tot;
     });
   }
 
@@ -2591,33 +2812,33 @@ function wire() {
     const hits = staleDone();
     const m = $("#fixMsg");
     if (!hits.length) {
-      m.textContent = "✓ 没有需要校正的条目"; m.style.color = "var(--green)";
+      m.textContent = t("✓ 没有需要校正的条目"); m.style.color = "var(--green)";
       return;
     }
     const list = hits.slice(0, 8)
-      .map(e => `${e.title}（${watchedEps(e)}/${totalEps(e)} 集）`).join("、");
-    if (!confirm(`有 ${hits.length} 部剧集标着「看完」但正季没看完，改成「在看」？\n\n`
-                 + list + (hits.length > 8 ? ` …等 ${hits.length} 部` : ""))) return;
+      .map(e => `${e.title}（${watchedEps(e)}/${totalEps(e)} ${t("集")}）`).join("、");
+    if (!confirm(t("有 {0} 部剧集标着「看完」但正季没看完，改成「在看」？", hits.length) + "\n\n"
+                 + list + (hits.length > 8 ? t(" …等 {0} 部", hits.length) : ""))) return;
     for (const e of hits) { e.status = "watching"; e.updatedAt = Date.now(); }
     save(); renderLibrary();
-    m.innerHTML = `✓ 已把 ${hits.length} 部改成「在看」`; m.style.color = "var(--green)";
-    toast(`已校正 ${hits.length} 部剧集`);
+    m.innerHTML = t("✓ 已把 {0} 部改成「在看」", hits.length); m.style.color = "var(--green)";
+    toast(t("已校正 {0} 部剧集", hits.length));
   });
 
   $("#setBirth").addEventListener("change", ev => {
     PREFS.birthYear = ev.target.value.trim(); savePrefs();
-    deck.cards = []; toast(PREFS.birthYear ? "已记录，推荐会参考你的成长年代" : "已取消");
+    deck.cards = []; toast(t(PREFS.birthYear ? "已记录，推荐会参考你的成长年代" : "已取消"));
   });
   $("#setHomeLang").addEventListener("change", ev => {
     PREFS.homeLang = ev.target.value; savePrefs();
-    deck.cards = []; toast(ev.target.value ? "已记录母语偏好" : "已取消");
+    deck.cards = []; toast(t(ev.target.value ? "已记录母语偏好" : "已取消"));
   });
   $("#resetSkipped").addEventListener("click", () => {
     const n = Object.keys(DB.skipped).length;
-    if (!n) { $("#skipMsg").textContent = "本来就是空的"; return; }
-    if (!confirm(`清空 ${n} 条「没看过」记录？它们会重新出现在推荐里。`)) return;
+    if (!n) { $("#skipMsg").textContent = t("本来就是空的"); return; }
+    if (!confirm(t("清空 {0} 条「没看过」记录？它们会重新出现在推荐里。", n))) return;
     DB.skipped = {}; save(); deck.cards = [];
-    $("#skipMsg").textContent = `已清空 ${n} 条`;
+    $("#skipMsg").textContent = t("已清空 {0} 条", n);
   });
 
   $("#expBtn").addEventListener("click", exportJSON);
@@ -2631,13 +2852,13 @@ function wire() {
     ev.target.value = "";
   });
   $("#wipeBtn").addEventListener("click", () => {
-    if (!confirm(`确定清空全部 ${DB.entries.length} 条记录？强烈建议先导出备份。`)) return;
-    if (!confirm("再确认一次：这会永久删除所有记录。")) return;
+    if (!confirm(t("确定清空全部 {0} 条记录？强烈建议先导出备份。", DB.entries.length))) return;
+    if (!confirm(t("再确认一次：这会永久删除所有记录。"))) return;
     const now = Date.now();
     for (const e of DB.entries) DB.deleted[e.id] = now;   // so sync doesn't resurrect them
     DB.entries = [];
     save(); renderLibrary(); renderStats();
-    toast("书架已清空");
+    toast(t("书架已清空"));
   });
 
   /* --- gist sync --- */
@@ -2652,20 +2873,20 @@ function wire() {
   $("#ghSave").addEventListener("click", () => {
     readGHFields();
     setSyncUI("");
-    toast(GH.token && GH.gist ? "已保存，可以同步了" : "已保存");
+    toast(t(GH.token && GH.gist ? "已保存，可以同步了" : "已保存"));
   });
 
   $("#ghNew").addEventListener("click", async () => {
     readGHFields();
-    if (!GH.token) { setSyncUI("err", "先填 Token"); return; }
-    if (GH.gist && !confirm("已经填了 Gist ID，确定再新建一个？现有的那个不会被删除，但这台设备会改用新的。")) return;
+    if (!GH.token) { setSyncUI("err", t("先填 Token")); return; }
+    if (GH.gist && !confirm(t("已经填了 Gist ID，确定再新建一个？现有的那个不会被删除，但这台设备会改用新的。"))) return;
     setSyncUI("syncing");
     try {
       const id = await ghCreateGist();
       $("#ghGist").value = id;
       GH.lastSync = Date.now(); saveGH();
-      setSyncUI("ok", "已新建私密 Gist " + id);
-      toast("Gist 已创建 · 把这个 ID 填到其他设备上");
+      setSyncUI("ok", t("已新建私密 Gist {0}", id));
+      toast(t("Gist 已创建 · 把这个 ID 填到其他设备上"));
     } catch (err) { setSyncUI("err", syncErr(err)); }
   });
 
@@ -2720,6 +2941,31 @@ function wire() {
   });
 }
 
+/** One switch drives both the interface and what TMDb is asked for, so every
+ *  cached response in the old language has to go. */
+function setLanguage(lang) {
+  if (lang === PREFS.lang) return;
+  PREFS.lang = lang;
+  savePrefs();
+  $("#tmLang").value = lang;
+  $("#setLang").value = lang;
+
+  extras.clear();          // overviews + cast
+  seasonCache.clear();     // episode lists
+  genreIds = null;         // genre names
+  feed.hits = []; feed.people = [];
+  deck.cards = []; deck.i = 0;
+
+  applyStaticI18n();
+  renderLibrary();
+  if (page === "stats") renderStats();
+  if (page === "deck") loadDeck();
+  if (page === "search") (feed.mode === "search" ? showSearch(feed.q) : showBrowse());
+  const v = $("#verLine");
+  if (v) v.textContent = t("本地共 {0} 条记录 · 数据格式 v{1}", DB.entries.length, VERSION);
+  toast(t("已切换语言"));
+}
+
 function setView(v) {
   PREFS.view = v; savePrefs(); resetLibPaging();
   $("#vGrid").setAttribute("aria-pressed", String(v === "grid"));
@@ -2741,6 +2987,7 @@ function reopenSeasons(e, seasons) {
 function init() {
   load();
   applyTheme();
+  applyStaticI18n();      // injects the prose blocks, #verLine among them
 
   $("#libSort").value = PREFS.sort;
   $("#tmLang").value  = PREFS.lang;
@@ -2753,7 +3000,7 @@ function init() {
   $("#setBirth").value = PREFS.birthYear || "";
   $("#setHomeLang").value = PREFS.homeLang || "";
   feed.key = PREFS.browse || "trend_week";
-  $("#verLine").textContent = `本地共 ${DB.entries.length} 条记录 · 数据格式 v${VERSION}`;
+  $("#verLine").textContent = t("本地共 {0} 条记录 · 数据格式 v{1}", DB.entries.length, VERSION);
   setView(PREFS.view);
 
   wire();
@@ -2765,7 +3012,7 @@ function init() {
     setTimeout(() => syncNow({ silent: true }), 600);
   }
   if (!KEY) {
-    setTimeout(() => toast("先去「设置」填一个 TMDb key，搜索才能用"), 700);
+    setTimeout(() => toast(t("先去「设置」填一个 TMDb key，搜索才能用")), 700);
   }
 }
 
